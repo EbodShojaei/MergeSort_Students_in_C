@@ -47,14 +47,14 @@ typedef struct student {
 	student *next;
 } student_t;
 
-// Function to sort by year of birth
-// Function to sort by month of birth
-// Function to sort by day of birth
-// Function to sort by last name
-// Function to sort by first name
-// Function to sort by GPA
-// Function to sort by TOEFL
-// Function to sort by student_status
+// Condition to sort by year of birth
+// Condition to sort by month of birth
+// Condition to sort by day of birth
+// Condition to sort by last name
+// Condition to sort by first name
+// Condition to sort by GPA
+// Condition to sort by TOEFL
+// Condition to sort by student_status
 
 int main() {
 	
