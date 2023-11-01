@@ -1,6 +1,7 @@
 # include <stdio.h>
 # include <stdlib.h>
 # include <string.h>
+# include <ctype.h>
 
 // Create a struct for the entity
 // The entity will sort using merge sort
@@ -68,8 +69,36 @@ typedef struct Student {
 // 
 // There are 6 strings per line.
 
+void callError() {
+	printf("Error: Invalid input format.\n");
+	exit(1);
+}
+
 /**
- * Read in text. Checks conditions meeting fields.
+ * Function to check if valid name.
+ * Valid name contains letters.
+ * Checks first and last name.
+ */
+void checkName(char *name) {
+	printf("Checking name...\n");
+	// If the name does not contain letters, error.
+	for (int i = 0; i < strlen(name); i++)
+		if (!isalpha(name[i])) callError();
+
+	printf("Name is valid.\n\n");
+}
+
+/**
+ * Function to check if valid string.
+ * Criteria uses collection of 
+ * check functions.
+ */ 
+void checkString(char *word) {
+	checkName(word);
+}
+
+/**
+ * Function to read in text. Checks conditions meeting fields.
  */ 
 void readFile(FILE *file) {
 	// Use strtok for next string of file stream
@@ -83,10 +112,32 @@ void readFile(FILE *file) {
 		while (word != NULL) {
 			printf("%s\n", word);
 			counter++;
-			if (counter > 6) {
-				printf("Error: Invalid input format.\n");
-				exit(1); // Bad input. Terminate program.
+
+			// checkString(word);
+			switch (counter) {
+				case 1:
+					checkName(word);
+					break;
+				case 2:
+					checkName(word);
+					break;
+				case 3:
+				//	checkDate(word);
+					break;
+				case 4:
+				//	checkGPA(word);
+					break;
+				case 5:
+				//	checkStatus(word);
+					break;
+				case 6:
+				//	checkTOEFL(word);
+					break;
+				default:
+					printf("Error: Invalid input format.\n");
+					exit(1); // Bad input. Terminate program.
 			}
+
 			word = strtok(NULL, delimiter); // Gets the next string
 		}
 	}
