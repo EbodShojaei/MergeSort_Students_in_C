@@ -77,16 +77,48 @@ void callError() {
 	exit(1);
 }
 
+// Recursive function to print the contents of a linked list
+void print_list(Student_t *head) {
+    if (head == NULL) {
+	printf("\n");
+	return;
+    }
+    printf("%s\n", head->first_name);
+    printf("%s\n", head->last_name);
+    printf("%s\n", head->birth_month);
+    printf("%s\n", head->birth_day);
+    printf("%s\n", head->birth_year);
+    printf("%s\n", head->gpa);
+    printf("%s\n", head->student_status);
+    printf("%s\n", head->toefl);
+    print_list(head->next);
+}
+
 /**
  * Function to check if valid name.
  * Valid name contains letters.
- * Checks first and last name.
+ * Checks first last name.
  */
-void checkName(char *name) {
+void addFirstName(char *name, Student_t *node) {
 	// If the name does not contain letters, error.
 	for (int i = 0; i < strlen(name); i++)
 		if (!isalpha(name[i])) callError();
 
+	node->first_name = name;
+	printf("Name is valid.\n\n");
+}
+
+/**
+ * Function to check if valid name.
+ * Valid name contains letters.
+ * Checks last name.
+ */
+void addLastName(char *name, Student_t *node) {
+	// If the name does not contain letters, error.
+	for (int i = 0; i < strlen(name); i++)
+		if (!isalpha(name[i])) callError();
+
+	node->last_name = name;
 	printf("Name is valid.\n\n");
 }
 
@@ -95,7 +127,7 @@ void checkName(char *name) {
  * Valid date contains numbers.
  * Checks month, day, and year.
  */
-void checkDate(char *date) {
+void addDate(char *date, Student_t *node) {
 	// Delimit each dash e.g., Month-Day-Year
 	int counter = 0;
 	char *delimiter = "-";
@@ -111,14 +143,17 @@ void checkDate(char *date) {
 				for (int i = 0; i < 12; i++)
 					if (strcmp(data, months[i]) == 0) break;
 					else if (i == 11) callError();
+				node->birth_month = data;
 				break;
 			case 2: // Day
 				// Check if number is between 1 and 31
 				if (atoi(data) < 1 || atoi(data) > 31) callError();
+				node->birth_day = data;
 				break;
 			case 3: // Year
 				// Check if number is between 1950 and 2010
 				if (atoi(data) < 1950 || atoi(data) > 2010) callError();
+				node->birth_year = data;
 				break;
 			default:
 				callError();
@@ -129,7 +164,7 @@ void checkDate(char *date) {
 	printf("Date is valid.\n\n");
 }
 
-void checkGPA(char *gpa) {
+void addGPA(char *gpa, Student_t *node) {
 	printf("%s\n", gpa);
 	char *ptr;
 	double val = strtod(gpa, &ptr); // Convert string to double
@@ -138,66 +173,73 @@ void checkGPA(char *gpa) {
 	if (val < 0.0 || val > 4.3) callError(); // If out of range, error
 	if (strlen(gpa) > 4) callError(); // If more than 3 decimal places, error
 
+	node->gpa = gpa;
 	printf("GPA is valid.\n\n");
 }
 
-void checkStatus(char *status) {
+void addStatus(char *status, Student_t *node) {
 	if (strcmp(status, "D") != 0 && strcmp(status, "I") != 0) callError();
 
+	node->student_status = status;
 	printf("Status is valid.\n\n");
 }
 
-void checkTOEFL(char *toefl) {
+void addTOEFL(char *toefl, Student_t *node) {
 	char *ptr;
 	int val = atoi(toefl); // Convert string to int
 
+	if (node->student_status == "D") callError(); // If domestic, error
 	if (val < 0 || val > 120) callError(); // If out of range, error
 
+	node->toefl = toefl;
 	printf("TOEFL is valid.\n\n");
 }
 
 /**
  * Function to read in text. Checks conditions meeting fields.
  */ 
-void readFile(FILE *file) {
-	// Use strtok for next string of file stream
-	// Is this a name?
+void readFile(FILE *file, Student_t *head) {
+	Student_t *current = head;
+
+	// Read in each line
 	char *line = (char *) malloc(256 * sizeof(char));
 	while (fgets(line, 256, file)) {
 		int counter = 0; // Reset on new line. Up to 6 inputs
 		char *delimiter = " ";
 		char *word = strtok(line, delimiter); // Gets the first string
 		
+		// Parse each string by space
 		while (word != NULL) {
+			if (counter > 6) callError();
 			printf("Token: %s\n", word);
 			counter++;
 
 			// checkString(word);
 			switch (counter) {
 				case 1:
-					checkName(word);
+					addFirstName(word, current);
 					break;
 				case 2:
-					checkName(word);
+					addLastName(word, current);
 					break;
 				case 3:
-					checkDate(word);
+					addDate(word, current);
 					break;
 				case 4:
-					checkGPA(word);
+					addGPA(word, current);
 					break;
 				case 5:
-					checkStatus(word);
+					addStatus(word, current);
 					break;
 				case 6:
-					checkTOEFL(word);
+					addTOEFL(word, current);
 					break;
 				default:
 					callError();
 			}
-
 			word = strtok(NULL, delimiter); // Gets the next string
 		}
+		current = current->next;
 	}
 }
 
@@ -226,7 +268,15 @@ int main(int argc, char *argv[]) {
 		return 1;
 	}
 
-	readFile(file);
+	Student_t *head = NULL;
+	head = (Student_t *) malloc(sizeof(Student_t));
+	if (head == NULL) {
+		printf("Error: Memory allocation failed.\n");
+		return 1;
+	}
+
+	readFile(file, head);
+	print_list(head);
 
 	return 0;
 }
