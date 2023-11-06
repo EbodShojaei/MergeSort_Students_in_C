@@ -48,7 +48,10 @@ typedef struct Student {
 	struct Student *next;
 } Student_t;
 
-
+const char *months[] = {
+	"Jan", "Feb", "Mar", "Apr", "May", "Jun", 
+	"Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+};
 
 // Condition to sort by year of birth
 // Condition to sort by month of birth
@@ -80,7 +83,6 @@ void callError() {
  * Checks first and last name.
  */
 void checkName(char *name) {
-	printf("Checking name...\n");
 	// If the name does not contain letters, error.
 	for (int i = 0; i < strlen(name); i++)
 		if (!isalpha(name[i])) callError();
@@ -89,12 +91,69 @@ void checkName(char *name) {
 }
 
 /**
- * Function to check if valid string.
- * Criteria uses collection of 
- * check functions.
- */ 
-void checkString(char *word) {
-	checkName(word);
+ * Function to check if valid date.
+ * Valid date contains numbers.
+ * Checks month, day, and year.
+ */
+void checkDate(char *date) {
+	// Delimit each dash e.g., Month-Day-Year
+	int counter = 0;
+	char *delimiter = "-";
+	char *data = strtok_r(date, delimiter, &date); 
+
+	while (data != NULL) {
+		printf("%s\n", data);
+		counter++;
+		
+		switch (counter) {
+			case 1: // Month
+				// Check if equals to one of the months
+				for (int i = 0; i < 12; i++)
+					if (strcmp(data, months[i]) == 0) break;
+					else if (i == 11) callError();
+				break;
+			case 2: // Day
+				// Check if number is between 1 and 31
+				if (atoi(data) < 1 || atoi(data) > 31) callError();
+				break;
+			case 3: // Year
+				// Check if number is between 1950 and 2010
+				if (atoi(data) < 1950 || atoi(data) > 2010) callError();
+				break;
+			default:
+				callError();
+		}
+		data = strtok_r(NULL, delimiter, &date); // Gets the next string
+	}
+
+	printf("Date is valid.\n\n");
+}
+
+void checkGPA(char *gpa) {
+	printf("%s\n", gpa);
+	char *ptr;
+	double val = strtod(gpa, &ptr); // Convert string to double
+
+	if (*ptr != '\0') callError(); // If there is a character, error
+	if (val < 0.0 || val > 4.3) callError(); // If out of range, error
+	if (strlen(gpa) > 4) callError(); // If more than 3 decimal places, error
+
+	printf("GPA is valid.\n\n");
+}
+
+void checkStatus(char *status) {
+	if (strcmp(status, "D") != 0 && strcmp(status, "I") != 0) callError();
+
+	printf("Status is valid.\n\n");
+}
+
+void checkTOEFL(char *toefl) {
+	char *ptr;
+	int val = atoi(toefl); // Convert string to int
+
+	if (val < 0 || val > 120) callError(); // If out of range, error
+
+	printf("TOEFL is valid.\n\n");
 }
 
 /**
@@ -110,7 +169,7 @@ void readFile(FILE *file) {
 		char *word = strtok(line, delimiter); // Gets the first string
 		
 		while (word != NULL) {
-			printf("%s\n", word);
+			printf("Token: %s\n", word);
 			counter++;
 
 			// checkString(word);
@@ -122,20 +181,19 @@ void readFile(FILE *file) {
 					checkName(word);
 					break;
 				case 3:
-				//	checkDate(word);
+					checkDate(word);
 					break;
 				case 4:
-				//	checkGPA(word);
+					checkGPA(word);
 					break;
 				case 5:
-				//	checkStatus(word);
+					checkStatus(word);
 					break;
 				case 6:
-				//	checkTOEFL(word);
+					checkTOEFL(word);
 					break;
 				default:
-					printf("Error: Invalid input format.\n");
-					exit(1); // Bad input. Terminate program.
+					callError();
 			}
 
 			word = strtok(NULL, delimiter); // Gets the next string
@@ -143,6 +201,8 @@ void readFile(FILE *file) {
 	}
 }
 
+
+	
 
 /**
  * ./<name of executable> <input file> <output file> <option>

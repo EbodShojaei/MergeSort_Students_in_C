@@ -1,4 +1,6 @@
 # Extensions
+archive/
+redo.c
 *.o
 *.out
 *.exe
