@@ -53,6 +53,13 @@ const char *months[] = {
 	"Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
 };
 
+// Function to append node to linked list
+void appendNode(Student_t *head) {
+	if (head == NULL) return;
+	if (head->next == NULL)
+		head->next = (Student_t *) malloc(sizeof(Student_t));
+}
+
 // Condition to sort by year of birth
 // Condition to sort by month of birth
 // Condition to sort by day of birth - Assume  
@@ -83,14 +90,16 @@ void print_list(Student_t *head) {
 	printf("\n");
 	return;
     }
-    printf("%s\n", head->first_name);
-    printf("%s\n", head->last_name);
-    printf("%s\n", head->birth_month);
-    printf("%s\n", head->birth_day);
-    printf("%s\n", head->birth_year);
-    printf("%s\n", head->gpa);
-    printf("%s\n", head->student_status);
-    printf("%s\n", head->toefl);
+    if (head->first_name != NULL) printf("%s\n", head->first_name);
+    if (head->last_name != NULL) printf("%s\n", head->last_name);
+    if (head->birth_month != NULL) printf("%s\n", head->birth_month);
+    if (head->birth_day != NULL) printf("%s\n", head->birth_day);
+    if (head->birth_year != NULL) printf("%s\n", head->birth_year);
+    if (head->gpa != NULL) printf("%s\n", head->gpa);
+    if (head->student_status != NULL) printf("%s\n", head->student_status);
+    if (head->toefl != NULL) printf("%s\n", head->toefl);
+    printf("\n");
+	
     print_list(head->next);
 }
 
@@ -104,7 +113,8 @@ void addFirstName(char *name, Student_t *node) {
 	for (int i = 0; i < strlen(name); i++)
 		if (!isalpha(name[i])) callError();
 
-	node->first_name = name;
+	node->first_name = strdup(name);
+	if (node->first_name == NULL) callError();
 	printf("Name is valid.\n\n");
 }
 
@@ -118,7 +128,8 @@ void addLastName(char *name, Student_t *node) {
 	for (int i = 0; i < strlen(name); i++)
 		if (!isalpha(name[i])) callError();
 
-	node->last_name = name;
+	node->last_name = strdup(name);
+	if (node->last_name == NULL) callError();
 	printf("Name is valid.\n\n");
 }
 
@@ -143,17 +154,20 @@ void addDate(char *date, Student_t *node) {
 				for (int i = 0; i < 12; i++)
 					if (strcmp(data, months[i]) == 0) break;
 					else if (i == 11) callError();
-				node->birth_month = data;
+				node->birth_month = strdup(data);
+				if (node->birth_month == NULL) callError();
 				break;
 			case 2: // Day
 				// Check if number is between 1 and 31
 				if (atoi(data) < 1 || atoi(data) > 31) callError();
-				node->birth_day = data;
+				node->birth_day = strdup(data);
+				if (node->birth_day == NULL) callError();
 				break;
 			case 3: // Year
 				// Check if number is between 1950 and 2010
 				if (atoi(data) < 1950 || atoi(data) > 2010) callError();
-				node->birth_year = data;
+				node->birth_year = strdup(data);
+				if (node->birth_year == NULL) callError();
 				break;
 			default:
 				callError();
@@ -171,28 +185,35 @@ void addGPA(char *gpa, Student_t *node) {
 
 	if (*ptr != '\0') callError(); // If there is a character, error
 	if (val < 0.0 || val > 4.3) callError(); // If out of range, error
-	if (strlen(gpa) > 4) callError(); // If more than 3 decimal places, error
+	if (strlen(gpa) > 5) callError(); // If more than 3 decimal places, error
 
-	node->gpa = gpa;
+	node->gpa = strdup(gpa);
+	if (node->gpa == NULL) callError();
 	printf("GPA is valid.\n\n");
 }
 
 void addStatus(char *status, Student_t *node) {
-	if (strcmp(status, "D") != 0 && strcmp(status, "I") != 0) callError();
+	if (status == NULL || (strcmp(status, "D") != 0 && strcmp(status, "I") != 0)) callError();
 
-	node->student_status = status;
+	node->student_status = strdup(status);
+	if (node->student_status == NULL) callError();
 	printf("Status is valid.\n\n");
 }
 
 void addTOEFL(char *toefl, Student_t *node) {
-	char *ptr;
-	int val = atoi(toefl); // Convert string to int
+	if ((strcmp(node->student_status, "D") == 0) && (toefl != NULL)) callError();
+	if ((strcmp(node->student_status, "I") == 0) && (toefl == NULL)) callError();
 
-	if (strcmp(node->student_status, "I") != 0) callError(); // If domestic, error
-	if (val < 0 || val > 120) callError(); // If out of range, error
+	if (toefl != NULL) {
+		char *end_ptr;
+		long val = strtol(toefl, &end_ptr, 10); // Convert string to int
+	
+		if (*end_ptr != '\0' || val < 0 || val > 120) callError(); // If out of range, error
 
-	node->toefl = toefl;
-	printf("TOEFL is valid.\n\n");
+		node->toefl = strdup(toefl);
+		if (node->toefl == NULL) callError();
+		printf("TOEFL is valid.\n\n");
+	}
 }
 
 /**
@@ -205,7 +226,7 @@ void readFile(FILE *file, Student_t *head) {
 	char *line = (char *) malloc(256 * sizeof(char));
 	while (fgets(line, 256, file)) {
 		int counter = 0; // Reset on new line. Up to 6 inputs
-		char *delimiter = " ";
+		char *delimiter = " \n";
 		char *word = strtok(line, delimiter); // Gets the first string
 		
 		// Parse each string by space
@@ -214,7 +235,6 @@ void readFile(FILE *file, Student_t *head) {
 			printf("Token: %s\n", word);
 			counter++;
 
-			// checkString(word);
 			switch (counter) {
 				case 1:
 					addFirstName(word, current);
@@ -239,6 +259,7 @@ void readFile(FILE *file, Student_t *head) {
 			}
 			word = strtok(NULL, delimiter); // Gets the next string
 		}
+		appendNode(current);
 		current = current->next;
 	}
 }
