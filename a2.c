@@ -53,11 +53,184 @@ const char *months[] = {
 	"Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
 };
 
+void callError() {
+	printf("Error: Invalid input format.\n");
+	exit(1);
+}
+
 // Function to append node to linked list
-void appendNode(Student_t *head) {
+void appendList(Student_t *head) {
 	if (head == NULL) return;
-	if (head->next == NULL)
-		head->next = (Student_t *) malloc(sizeof(Student_t));
+	Student_t *current = head;
+
+	while (current->next != NULL) current = current->next;
+	current->next = (Student_t *) malloc(sizeof(Student_t));
+	if (current->next == NULL) callError();
+	// Set tail to NULL and all fields
+	current->next->next = NULL;
+	current->next->first_name = NULL;
+	current->next->last_name = NULL;
+	current->next->birth_month = NULL;
+	current->next->birth_day = NULL;
+	current->next->birth_year = NULL;
+	current->next->gpa = NULL;
+	current->next->student_status = NULL;
+	current->next->toefl = NULL;
+}
+
+// Function to free linked list
+void freeList(Student_t *head) {
+	if (head == NULL) return;
+
+	// Free other dynamically allocated
+	freeList(head->next);
+	free(head);
+}
+
+// Function to compare by year
+int compareByYear(Student_t *a, Student_t *b) {
+	if (atoi(a->birth_year) < atoi(b->birth_year)) return -1; // a is less than b
+	if (atoi(a->birth_year) > atoi(b->birth_year)) return 1; // a is greater than b
+	return 0; // a is equal to b
+}
+
+// Function to compare by month
+int compareByMonth(Student_t *a, Student_t *b) {
+	// Get the index of the month from the months array
+	int a_index = 0;
+	int b_index = 0;
+
+	for (int i = 0; i < 12; i++) {
+		if (strcmp(a->birth_month, months[i]) == 0) a_index = i;
+		if (strcmp(b->birth_month, months[i]) == 0) b_index = i;
+	}
+
+	if (a_index < b_index) return -1; // a is less than b
+	if (a_index > b_index) return 1; // a is greater than b
+	return 0; // a is equal to b
+}
+
+// Function to compare by day
+int compareByDay(Student_t *a, Student_t *b) {
+	if (atoi(a->birth_day) < atoi(b->birth_day)) return -1; // a is less than b
+	if (atoi(a->birth_day) > atoi(b->birth_day)) return 1; // a is greater than b
+	return 0; // a is equal to b
+}
+
+// Function to compare by last name
+int compareByLastName(Student_t *a, Student_t *b) {
+	return strcmp(a->last_name, b->last_name);
+}
+
+// Function to compare by first name
+int compareByFirstName(Student_t *a, Student_t *b) {
+	return strcmp(a->first_name, b->first_name);
+}
+
+// Function to compare by GPA
+int compareByGPA(Student_t *a, Student_t *b) {
+	double gpa_a = atof(a->gpa);
+	double gpa_b = atof(b->gpa);
+
+	if (gpa_a < gpa_b) return -1; // a is less than b
+	if (gpa_a > gpa_b) return 1; // a is greater than b
+	return 0; // a is equal to b
+}
+
+// Function to compare by TOEFL
+int compareByTOEFL(Student_t *a, Student_t *b) {
+	// If no TOEFL, then domestic
+	if (a->toefl == NULL && b->toefl != NULL) return 1; // a is domestic, b is international
+	if (a->toefl != NULL && b->toefl == NULL) return -1; // a is international, b is domestic
+	if (a->toefl == NULL && b->toefl == NULL) return 0; // Both are domestic
+	
+	// Both have TOEFL, so compare
+	int toefl_a = atoi(a->toefl);
+	int toefl_b = atoi(b->toefl);
+
+	if (toefl_a < toefl_b) return -1; // a is less than b
+	if (toefl_a > toefl_b) return 1; // a is greater than b
+	return 0; // a is equal to b
+}
+
+// Function to compare by student status
+int compareByStatus(Student_t *a, Student_t *b) {
+	return strcmp(a->student_status, b->student_status);
+}
+
+// Function to compare by all fields
+int compareStudents(Student_t *a, Student_t *b) {
+	int result;
+
+	// Use each compare function in the given order until a difference is found
+	//if ((result = compareByYear(a, b)) != 0) return result;
+	//if ((result = compareByMonth(a, b)) != 0) return result;
+	//if ((result = compareByDay(a, b)) != 0) return result;
+	//if ((result = compareByLastName(a, b)) != 0) return result;
+	//if ((result = compareByFirstName(a, b)) != 0) return result;
+	//if ((result = compareByGPA(a, b)) != 0) return result;
+	if ((result = compareByTOEFL(a, b)) != 0) return result;
+	//if ((result = compareByStatus(a, b)) != 0) return result;
+
+	return 0; // a is equal to b
+}
+
+// Function to split a linked list into two halves
+void splitList(Student_t *head, Student_t **left, Student_t **right) {
+	if (head == NULL || head->next == NULL) {
+		*left = head;
+		*right = NULL;
+		return;
+	}
+
+	Student_t *slow = head;
+	Student_t *fast = head->next;
+
+	while (fast != NULL) {
+		fast = fast->next;
+		if (fast != NULL) {
+			slow = slow->next;
+			fast = fast->next;
+		}
+	}
+
+	*left = head;
+	*right = slow->next;
+	slow->next = NULL;
+}
+
+// Function to merge two linked lists
+Student_t *mergeList(Student_t *left, Student_t *right) {
+	Student_t *result = NULL;
+
+	if (left == NULL) return right;
+	if (right == NULL) return left;
+
+	int compare = compareStudents(left, right);
+	if (compare <= 0) {
+		result = left;
+		result->next = mergeList(left->next, right);
+	} else {
+		result = right;
+		result->next = mergeList(left, right->next);
+	}
+
+	return result;
+}
+
+// Function to sort a linked list
+void sortList(Student_t **head) {
+	if (*head == NULL || (*head)->next == NULL) return;
+
+	Student_t *left = NULL;
+	Student_t *right = NULL;
+
+	splitList(*head, &left, &right);
+
+	sortList(&left);
+	sortList(&right);
+
+	*head = mergeList(left, right);
 }
 
 // Condition to sort by year of birth
@@ -79,13 +252,8 @@ void appendNode(Student_t *head) {
 // 
 // There are 6 strings per line.
 
-void callError() {
-	printf("Error: Invalid input format.\n");
-	exit(1);
-}
-
 // Recursive function to print the contents of a linked list
-void print_list(Student_t *head) {
+void printList(Student_t *head) {
     if (head == NULL) {
 	printf("\n");
 	return;
@@ -100,7 +268,7 @@ void print_list(Student_t *head) {
     if (head->toefl != NULL) printf("%s\n", head->toefl);
     printf("\n");
 	
-    print_list(head->next);
+    printList(head->next);
 }
 
 /**
@@ -259,7 +427,7 @@ void readFile(FILE *file, Student_t *head) {
 			}
 			word = strtok(NULL, delimiter); // Gets the next string
 		}
-		appendNode(current);
+		appendList(current);
 		current = current->next;
 	}
 }
@@ -296,8 +464,43 @@ int main(int argc, char *argv[]) {
 		return 1;
 	}
 
-	readFile(file, head);
-	print_list(head);
+	//readFile(file, head);
+	//printList(head);
+
+	head->first_name = "Bob";
+	head->last_name = "Sagat";
+	head->birth_month = "Jan";
+	head->birth_day = "1";
+	head->birth_year = "1980";
+	head->gpa = "4.0";
+	head->student_status = "D";
+	head->toefl = NULL;
+	head->next = NULL;
+	appendList(head);
+
+    head->next->first_name = "Jack";
+	head->next->last_name = "Black";
+	head->next->birth_month = "Dec";
+	head->next->birth_day = "4";
+	head->next->birth_year = "1967";
+	head->next->gpa = "2.345";
+	head->next->student_status = "I";
+	head->next->toefl = "119";
+	appendList(head->next);
+
+	head->next->next->first_name = "Allen";
+	head->next->next->last_name = "Key";
+	head->next->next->birth_month = "Mar";
+	head->next->next->birth_day = "31";
+	head->next->next->birth_year = "2001";
+	head->next->next->gpa = "3.765";
+	head->next->next->student_status = "I";
+	head->next->next->toefl = "50";
+	appendList(head->next->next);
+	printList(head);
+
+	sortList(&head);
+	printList(head);
 
 	return 0;
 }
