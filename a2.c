@@ -188,7 +188,7 @@ void addTOEFL(char *toefl, Student_t *node) {
 	char *ptr;
 	int val = atoi(toefl); // Convert string to int
 
-	if (node->student_status == "D") callError(); // If domestic, error
+	if (strcmp(node->student_status, "I") != 0) callError(); // If domestic, error
 	if (val < 0 || val > 120) callError(); // If out of range, error
 
 	node->toefl = toefl;
