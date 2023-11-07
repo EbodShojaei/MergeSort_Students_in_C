@@ -573,6 +573,10 @@ int main(int argc, char *argv[]) {
 	Student_t *head = createNode();
 
 	const int option = atoi(argv[3]);
+	if (option < 1 || option > 3) {
+		printf("Error: Usage %s <input_file> <output_file> <option>\n", argv[0]);
+		return 1;
+	}
 	readFile(file, head, option);
 //	printList(head);
 	sortList(&head);
@@ -582,6 +586,11 @@ int main(int argc, char *argv[]) {
 
 	const char *output_name = argv[2];
 	file = fopen(output_name, "w");
+	
+	if (file == NULL) {
+		printf("Error: File could not open.\n");
+		return 1;
+	}
 	writeFile(file, head);
 
 	return 0;
