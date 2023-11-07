@@ -58,24 +58,51 @@ void callError() {
 	exit(1);
 }
 
-// Function to append node to linked list
-void appendList(Student_t *head) {
-	if (head == NULL) return;
+// Recursive function to print the contents of a linked list
+void printList(Student_t *head) {
 	Student_t *current = head;
+	while (current != NULL) {
+		if (current->first_name != NULL) printf("%s ", current->first_name);
+		if (current->last_name != NULL) printf("%s ", current->last_name);
+		if (current->birth_month != NULL) printf("%s ", current->birth_month);
+		if (current->birth_day != NULL) printf("%s ", current->birth_day);
+		if (current->birth_year != NULL) printf("%s ", current->birth_year);
+		if (current->gpa != NULL) printf("%s ", current->gpa);
+		if (current->student_status != NULL) printf("%s ", current->student_status);
+		if (current->toefl != NULL) printf("%s ", current->toefl);
+		printf("\n");
+		current = current->next;
+	}
+}
+
+// Function to create a new node
+Student_t *createNode() {
+	Student_t *node = (Student_t *) malloc(sizeof(Student_t));
+	if (node == NULL) callError();
+
+	node->first_name = NULL;
+	node->last_name = NULL;
+	node->birth_month = NULL;
+	node->birth_day = NULL;
+	node->birth_year = NULL;
+	node->gpa = NULL;
+	node->student_status = NULL;
+	node->toefl = NULL;
+	node->next = NULL;
+
+	return node;
+}
+
+// Function to append node to linked list
+void appendList(Student_t **head, Student_t *next) {
+	Student_t *current = *head;
+	if (current == NULL) {
+		*head = next;
+		return;
+	}
 
 	while (current->next != NULL) current = current->next;
-	current->next = (Student_t *) malloc(sizeof(Student_t));
-	if (current->next == NULL) callError();
-	// Set tail to NULL and all fields
-	current->next->next = NULL;
-	current->next->first_name = NULL;
-	current->next->last_name = NULL;
-	current->next->birth_month = NULL;
-	current->next->birth_day = NULL;
-	current->next->birth_year = NULL;
-	current->next->gpa = NULL;
-	current->next->student_status = NULL;
-	current->next->toefl = NULL;
+	current->next = next;
 }
 
 // Function to free linked list
@@ -163,14 +190,14 @@ int compareStudents(Student_t *a, Student_t *b) {
 	int result;
 
 	// Use each compare function in the given order until a difference is found
-	//if ((result = compareByYear(a, b)) != 0) return result;
-	//if ((result = compareByMonth(a, b)) != 0) return result;
-	//if ((result = compareByDay(a, b)) != 0) return result;
-	//if ((result = compareByLastName(a, b)) != 0) return result;
-	//if ((result = compareByFirstName(a, b)) != 0) return result;
-	//if ((result = compareByGPA(a, b)) != 0) return result;
-	if ((result = compareByTOEFL(a, b)) != 0) return result;
-	//if ((result = compareByStatus(a, b)) != 0) return result;
+//	if ((result = compareByYear(a, b)) != 0) return result;
+//	if ((result = compareByMonth(a, b)) != 0) return result;
+//	if ((result = compareByDay(a, b)) != 0) return result;
+//	if ((result = compareByLastName(a, b)) != 0) return result;
+//	if ((result = compareByFirstName(a, b)) != 0) return result;
+//	if ((result = compareByGPA(a, b)) != 0) return result;
+//	if ((result = compareByTOEFL(a, b)) != 0) return result;
+//	if ((result = compareByStatus(a, b)) != 0) return result;
 
 	return 0; // a is equal to b
 }
@@ -251,25 +278,6 @@ void sortList(Student_t **head) {
 // Function to check if TOEFL data (if domestic student, then invalid format)
 // 
 // There are 6 strings per line.
-
-// Recursive function to print the contents of a linked list
-void printList(Student_t *head) {
-    if (head == NULL) {
-	printf("\n");
-	return;
-    }
-    if (head->first_name != NULL) printf("%s\n", head->first_name);
-    if (head->last_name != NULL) printf("%s\n", head->last_name);
-    if (head->birth_month != NULL) printf("%s\n", head->birth_month);
-    if (head->birth_day != NULL) printf("%s\n", head->birth_day);
-    if (head->birth_year != NULL) printf("%s\n", head->birth_year);
-    if (head->gpa != NULL) printf("%s\n", head->gpa);
-    if (head->student_status != NULL) printf("%s\n", head->student_status);
-    if (head->toefl != NULL) printf("%s\n", head->toefl);
-    printf("\n");
-	
-    printList(head->next);
-}
 
 /**
  * Function to check if valid name.
@@ -404,36 +412,20 @@ void readFile(FILE *file, Student_t *head) {
 			counter++;
 
 			switch (counter) {
-				case 1:
-					addFirstName(word, current);
-					break;
-				case 2:
-					addLastName(word, current);
-					break;
-				case 3:
-					addDate(word, current);
-					break;
-				case 4:
-					addGPA(word, current);
-					break;
-				case 5:
-					addStatus(word, current);
-					break;
-				case 6:
-					addTOEFL(word, current);
-					break;
-				default:
-					callError();
+				case 1: addFirstName(word, current); break;
+				case 2: addLastName(word, current); break;
+				case 3: addDate(word, current); break;
+				case 4: addGPA(word, current); break;
+				case 5: addStatus(word, current); break;
+				case 6: addTOEFL(word, current); break;
+				default: callError();
 			}
 			word = strtok(NULL, delimiter); // Gets the next string
 		}
-		appendList(current);
+		appendList(&head, createNode());
 		current = current->next;
 	}
 }
-
-
-	
 
 /**
  * ./<name of executable> <input file> <output file> <option>
@@ -457,50 +449,13 @@ int main(int argc, char *argv[]) {
 		return 1;
 	}
 
-	Student_t *head = NULL;
-	head = (Student_t *) malloc(sizeof(Student_t));
-	if (head == NULL) {
-		printf("Error: Memory allocation failed.\n");
-		return 1;
-	}
-
-	//readFile(file, head);
-	//printList(head);
-
-	head->first_name = "Bob";
-	head->last_name = "Sagat";
-	head->birth_month = "Jan";
-	head->birth_day = "1";
-	head->birth_year = "1980";
-	head->gpa = "4.0";
-	head->student_status = "D";
-	head->toefl = NULL;
-	head->next = NULL;
-	appendList(head);
-
-    head->next->first_name = "Jack";
-	head->next->last_name = "Black";
-	head->next->birth_month = "Dec";
-	head->next->birth_day = "4";
-	head->next->birth_year = "1967";
-	head->next->gpa = "2.345";
-	head->next->student_status = "I";
-	head->next->toefl = "119";
-	appendList(head->next);
-
-	head->next->next->first_name = "Allen";
-	head->next->next->last_name = "Key";
-	head->next->next->birth_month = "Mar";
-	head->next->next->birth_day = "31";
-	head->next->next->birth_year = "2001";
-	head->next->next->gpa = "3.765";
-	head->next->next->student_status = "I";
-	head->next->next->toefl = "50";
-	appendList(head->next->next);
+	Student_t *head = createNode();
+	readFile(file, head);
 	printList(head);
-
 	sortList(&head);
 	printList(head);
+
+
 
 	return 0;
 }
