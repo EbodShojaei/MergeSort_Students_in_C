@@ -35,6 +35,7 @@
 // [2] Allow for sorting by just international students.
 // [3] Allow for sorting by all students.
 
+// Create a struct for the entity
 typedef struct Student {
 	char *first_name; // Alphabet
 	char *last_name; // Alphabet
@@ -48,24 +49,32 @@ typedef struct Student {
 	struct Student *next;
 } Student_t;
 
+// Months array
 const char *months[] = {
 	"Jan", "Feb", "Mar", "Apr", "May", "Jun", 
 	"Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
 };
 
+/**
+ * Function to call error.
+ * Prints error message and exits.
+ */
 void callError() {
 	printf("Error: Invalid input format.\n");
 	exit(1);
 }
 
-// Recursive function to print the contents of a linked list
+/**
+ * Function to print the linked list.
+ * Prints by all fields.
+ */
 void printList(Student_t *head) {
 	Student_t *current = head;
 	while (current != NULL) {
 		if (current->first_name != NULL) printf("%s ", current->first_name);
 		if (current->last_name != NULL) printf("%s ", current->last_name);
-		if (current->birth_month != NULL) printf("%s ", current->birth_month);
-		if (current->birth_day != NULL) printf("%s ", current->birth_day);
+		if (current->birth_month != NULL) printf("%s-", current->birth_month);
+		if (current->birth_day != NULL) printf("%s-", current->birth_day);
 		if (current->birth_year != NULL) printf("%s ", current->birth_year);
 		if (current->gpa != NULL) printf("%s ", current->gpa);
 		if (current->student_status != NULL) printf("%s ", current->student_status);
@@ -75,7 +84,11 @@ void printList(Student_t *head) {
 	}
 }
 
-// Function to create a new node
+/**
+ * Function to create a node.
+ * Dynamically allocates memory for the node.
+ * If the node is NULL, then error.
+ */
 Student_t *createNode() {
 	Student_t *node = (Student_t *) malloc(sizeof(Student_t));
 	if (node == NULL) callError();
@@ -93,7 +106,10 @@ Student_t *createNode() {
 	return node;
 }
 
-// Function to append node to linked list
+/**
+ * Function to append a node to the end of the linked list.
+ * If the head is NULL, then the head is the node.
+ */
 void appendList(Student_t **head, Student_t *next) {
 	Student_t *current = *head;
 	if (current == NULL) {
@@ -105,7 +121,10 @@ void appendList(Student_t **head, Student_t *next) {
 	current->next = next;
 }
 
-// Function to free linked list
+/**
+ * Function to free the linked list.
+ * Frees by all fields.
+ */
 void freeList(Student_t *head) {
 	if (head == NULL) return;
 
@@ -114,7 +133,10 @@ void freeList(Student_t *head) {
 	free(head);
 }
 
-// Function to compare by year
+/**
+ * Function to compare by year.
+ * NULL precedes non-NULL.
+ */
 int compareByYear(Student_t *a, Student_t *b) {
 	if (a->birth_year == NULL && b->birth_year != NULL) return 1;
 	if (a->birth_year != NULL && b->birth_year == NULL) return -1;
@@ -125,7 +147,9 @@ int compareByYear(Student_t *a, Student_t *b) {
 	return 0; // a is equal to b
 }
 
-// Function to compare by month
+/**
+ * Function to compare by month.
+ */
 int compareByMonth(Student_t *a, Student_t *b) {
 	if (a->birth_month == NULL && b->birth_month != NULL) return 1;
 	if (a->birth_month != NULL && b->birth_month == NULL) return -1;
@@ -145,7 +169,10 @@ int compareByMonth(Student_t *a, Student_t *b) {
 	return 0; // a is equal to b
 }
 
-// Function to compare by day
+/**
+ * Function to compare by day.
+ * NULL precedes non-NULL.
+ */
 int compareByDay(Student_t *a, Student_t *b) {
 	if (a->birth_day == NULL && b->birth_day != NULL) return 1;
 	if (a->birth_day != NULL && b->birth_day == NULL) return -1;
@@ -156,7 +183,10 @@ int compareByDay(Student_t *a, Student_t *b) {
 	return 0; // a is equal to b
 }
 
-// Function to compare by last name
+/**
+ * Function to compare by last name.
+ * NULL precedes non-NULL.
+ */
 int compareByLastName(Student_t *a, Student_t *b) {
 	if (a->last_name == NULL && b->last_name != NULL) return 1;
 	if (a->last_name != NULL && b->last_name == NULL) return -1;
@@ -165,7 +195,10 @@ int compareByLastName(Student_t *a, Student_t *b) {
 	return strcmp(a->last_name, b->last_name);
 }
 
-// Function to compare by first name
+/**
+ * Function to compare by first name.
+ * NULL precedes non-NULL.
+ */
 int compareByFirstName(Student_t *a, Student_t *b) {
 	if (a->first_name == NULL && b->first_name != NULL) return 1;
 	if (a->first_name != NULL && b->first_name == NULL) return -1;
@@ -174,7 +207,10 @@ int compareByFirstName(Student_t *a, Student_t *b) {
 	return strcmp(a->first_name, b->first_name);
 }
 
-// Function to compare by GPA
+/**
+ * Function to compare by GPA.
+ * NULL precedes non-NULL.
+ */
 int compareByGPA(Student_t *a, Student_t *b) {
 	if (a->gpa == NULL && b->gpa != NULL) return 1;
 	if (a->gpa != NULL && b->gpa == NULL) return -1;
@@ -188,7 +224,10 @@ int compareByGPA(Student_t *a, Student_t *b) {
 	return 0; // a is equal to b
 }
 
-// Function to compare by TOEFL
+/**
+ * Function to compare by TOEFL.
+ * Domestic precedes international.
+ */
 int compareByTOEFL(Student_t *a, Student_t *b) {
 	// If no TOEFL, then domestic
 	if (a->toefl == NULL && b->toefl != NULL) return 1; // a is domestic, b is international
@@ -204,7 +243,10 @@ int compareByTOEFL(Student_t *a, Student_t *b) {
 	return 0; // a is equal to b
 }
 
-// Function to compare by student status
+/**
+ * Function to compare by status.
+ * Domestic precedes international.
+ */
 int compareByStatus(Student_t *a, Student_t *b) {
 	if (a->student_status == NULL && b->student_status != NULL) return 1;
 	if (a->student_status != NULL && b->student_status == NULL) return -1;
@@ -213,7 +255,10 @@ int compareByStatus(Student_t *a, Student_t *b) {
 	return strcmp(a->student_status, b->student_status);
 }
 
-// Function to compare by all fields
+/**
+ * Function to compare two students.
+ * Compares by all fields.
+ */
 int compareStudents(Student_t *a, Student_t *b) {
 	int result;
 
@@ -230,7 +275,10 @@ int compareStudents(Student_t *a, Student_t *b) {
 	return 0; // a is equal to b
 }
 
-// Function to split a linked list into two halves
+/**
+ * Function to split a linked list into two halves.
+ * Splits by all fields.
+ */
 void splitList(Student_t *head, Student_t **left, Student_t **right) {
 	if (head == NULL || head->next == NULL) {
 		*left = head;
@@ -254,7 +302,10 @@ void splitList(Student_t *head, Student_t **left, Student_t **right) {
 	slow->next = NULL;
 }
 
-// Function to merge two linked lists
+/**
+ * Function to merge two linked lists.
+ * Merges by all fields.
+ */
 Student_t *mergeList(Student_t *left, Student_t *right) {
 	Student_t *result = NULL;
 
@@ -273,7 +324,10 @@ Student_t *mergeList(Student_t *left, Student_t *right) {
 	return result;
 }
 
-// Function to sort a linked list
+/**
+ * Function to sort a linked list using merge sort.
+ * Sorts by all fields.
+ */
 void sortList(Student_t **head) {
 	if (*head == NULL || (*head)->next == NULL) return;
 
@@ -413,14 +467,15 @@ void addTOEFL(char *toefl, Student_t *node) {
 }
 
 /**
- * Function to read in text. Checks conditions meeting fields.
+ * Function to read text from input file. 
+ * Checks conditions meeting fields.
  */ 
-void readFile(FILE *file, Student_t *head) {
+void readFile(FILE *input, Student_t *head) {
 	Student_t *current = head;
 
 	// Read in each line
 	char *line = (char *) malloc(256 * sizeof(char));
-	while (fgets(line, 256, file)) {
+	while (fgets(line, 256, input)) {
 		int counter = 0; // Reset on new line. Up to 6 inputs
 		char *delimiter = " \n";
 		char *word = strtok(line, delimiter); // Gets the first string
@@ -445,6 +500,31 @@ void readFile(FILE *file, Student_t *head) {
 		appendList(&head, createNode());
 		current = current->next;
 	}
+}
+
+/**
+ * Function to write text to output file.
+ * Writes by all fields.
+ */
+void writeFile(FILE *output, Student_t *head) {
+	Student_t *current = head;
+	while (current != NULL) {
+		if (current->first_name != NULL) fprintf(output, "%s ", current->first_name);
+		if (current->last_name != NULL) fprintf(output, "%s ", current->last_name);
+		if (current->birth_month != NULL) fprintf(output, "%s-", current->birth_month);
+		if (current->birth_day != NULL) fprintf(output, "%s-", current->birth_day);
+		if (current->birth_year != NULL) fprintf(output, "%s ", current->birth_year);
+		if (current->gpa != NULL) fprintf(output, "%s ", current->gpa);
+		if (current->student_status != NULL) fprintf(output, "%s ", current->student_status);
+		if (current->toefl != NULL) fprintf(output, "%s ", current->toefl);
+		fprintf(output, "\n");
+		current = current->next;
+	}
+
+	// Close the output file
+	fclose(output);
+
+	printf("Successfully wrote to output file.\n");
 }
 
 /**
@@ -473,11 +553,13 @@ int main(int argc, char *argv[]) {
 	readFile(file, head);
 	printList(head);
 	sortList(&head);
-	//int result = compareByName(head, head->next);
-	//printf("%d\n", result);
 	printList(head);
 
+	fclose(file);
 
+	const char *output_name = argv[2];
+	file = fopen(output_name, "w");
+	writeFile(file, head);
 
 	return 0;
 }
