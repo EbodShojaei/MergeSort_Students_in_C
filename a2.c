@@ -4,38 +4,6 @@
 # include <ctype.h>
 
 // Create a struct for the entity
-// The entity will sort using merge sort
-// 	Birth year
-// 	Birth month
-// 	Birth day
-// 	Last name (alphabetical)
-// 	First name (alphabetical)
-// 	GPA
-// 	TOEFL (none precedes)
-// 	Domestic > International
-//
-// Merge sort
-// 	e.g., [1 3 2 5 4 7 8 6]
-// 	Split in half
-// 		1325  4786
-// 	Split again
-// 		13  25  47  86
-// 	Sort the elements
-// 		13  25  47  68
-// 	Merge to halves
-// 		1325  4768
-// 	Sort left
-// 		1235
-// 	Sort right
-// 		4768
-// 	Finally, insert in order
-// 		12345678
-//
-// [1] Allow for sorting by just domestic students.
-// [2] Allow for sorting by just international students.
-// [3] Allow for sorting by all students.
-
-// Create a struct for the entity
 typedef struct Student {
 	char *first_name; // Alphabet
 	char *last_name; // Alphabet
@@ -550,13 +518,19 @@ void writeFile(FILE *output, Student_t *head) {
 }
 
 /**
- * ./<name of executable> <input file> <output file> <option>
+ * Driver program.
  *
- * Example input: "Mary Jackson Feb-2-1990 4.0 I 60"
+ * Usage:
+ * 		./<name of executable> <input file> <output file> <option>
  *
- * Option is integer of 1, 2, or 3.
+ * Options as follows:
+ * 		[1] Allow for sorting by just domestic students.
+ * 		[2] Allow for sorting by just international students.
+ * 		[3] Allow for sorting by all students.
  *
- */ 
+ * Example input: 
+ * 		"Mary Jackson Feb-2-1990 4.0 I 60"
+ */
 int main(int argc, char *argv[]) {
 	if (argc != 4) {
 		printf("Error: Usage %s <input_file> <output_file> <option>\n", argv[0]);
