@@ -354,7 +354,7 @@ void addFirstName(char *name, Student_t *node) {
 
 	node->first_name = strdup(name);
 	if (node->first_name == NULL) callError();
-	printf("Name is valid.\n\n");
+	//printf("Name is valid.\n\n");
 }
 
 /**
@@ -369,7 +369,7 @@ void addLastName(char *name, Student_t *node) {
 
 	node->last_name = strdup(name);
 	if (node->last_name == NULL) callError();
-	printf("Name is valid.\n\n");
+	//printf("Name is valid.\n\n");
 }
 
 /**
@@ -384,7 +384,7 @@ void addDate(char *date, Student_t *node) {
 	char *data = strtok_r(date, delimiter, &date); 
 
 	while (data != NULL) {
-		printf("%s\n", data);
+		//printf("%s\n", data);
 		counter++;
 		
 		switch (counter) {
@@ -414,14 +414,14 @@ void addDate(char *date, Student_t *node) {
 		data = strtok_r(NULL, delimiter, &date); // Gets the next string
 	}
 
-	printf("Date is valid.\n\n");
+	//printf("Date is valid.\n\n");
 }
 
 /**
  * Function to check if valid GPA.
  */
 void addGPA(char *gpa, Student_t *node) {
-	printf("%s\n", gpa);
+	//printf("%s\n", gpa);
 	char *ptr;
 	double val = strtod(gpa, &ptr); // Convert string to double
 
@@ -431,7 +431,7 @@ void addGPA(char *gpa, Student_t *node) {
 
 	node->gpa = strdup(gpa);
 	if (node->gpa == NULL) callError();
-	printf("GPA is valid.\n\n");
+	//printf("GPA is valid.\n\n");
 }
 
 /**
@@ -443,7 +443,7 @@ void addStatus(char *status, Student_t *node) {
 
 	node->student_status = strdup(status);
 	if (node->student_status == NULL) callError();
-	printf("Status is valid.\n\n");
+	//printf("Status is valid.\n\n");
 }
 
 /**
@@ -462,7 +462,7 @@ void addTOEFL(char *toefl, Student_t *node) {
 
 		node->toefl = strdup(toefl);
 		if (node->toefl == NULL) callError();
-		printf("TOEFL is valid.\n\n");
+		//printf("TOEFL is valid.\n\n");
 	}
 }
 
@@ -483,7 +483,7 @@ void readFile(FILE *input, Student_t *head, const int option) {
 		// Parse each string by space
 		while (word != NULL) {
 			if (counter > 6) callError();
-			printf("Token: %s\n", word);
+			//printf("Token: %s\n", word);
 			counter++;
 
 			switch (counter) {
@@ -539,7 +539,7 @@ void writeFile(FILE *output, Student_t *head) {
 		if (current->gpa != NULL) fprintf(output, "%s ", current->gpa);
 		if (current->student_status != NULL) fprintf(output, "%s ", current->student_status);
 		if (current->toefl != NULL) fprintf(output, "%s ", current->toefl);
-		fprintf(output, "\n");
+		if (current->next != NULL) fprintf(output, "\n");
 		current = current->next;
 	}
 
@@ -574,9 +574,9 @@ int main(int argc, char *argv[]) {
 
 	const int option = atoi(argv[3]);
 	readFile(file, head, option);
-	printList(head);
+//	printList(head);
 	sortList(&head);
-	printList(head);
+//	printList(head);
 
 	fclose(file);
 
