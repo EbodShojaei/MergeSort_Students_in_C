@@ -470,7 +470,7 @@ void addTOEFL(char *toefl, Student_t *node) {
  * Function to read text from input file. 
  * Checks conditions meeting fields.
  */ 
-void readFile(FILE *input, Student_t *head) {
+void readFile(FILE *input, Student_t *head, const int option) {
 	Student_t *current = head;
 
 	// Read in each line
@@ -497,8 +497,30 @@ void readFile(FILE *input, Student_t *head) {
 			}
 			word = strtok(NULL, delimiter); // Gets the next string
 		}
-		appendList(&head, createNode());
-		current = current->next;
+		switch (option) {
+			case 1: // Domestic
+				if (strcmp(current->student_status, "D") == 0) {
+					appendList(&head, createNode());
+					current = current->next;
+				} else {
+					freeList(current);
+					current = createNode();
+				}
+				break;
+			case 2: // International
+				if (strcmp(current->student_status, "I") == 0) { 
+					appendList(&head, createNode());
+					current = current->next;
+				} else {
+					freeList(current);
+					current = createNode();
+				}
+				break;
+			case 3: // All
+				appendList(&head, createNode());
+				current = current->next;
+				break;
+		}
 	}
 }
 
@@ -548,9 +570,10 @@ int main(int argc, char *argv[]) {
 		printf("Error: File not found.\n");
 		return 1;
 	}
-
 	Student_t *head = createNode();
-	readFile(file, head);
+
+	const int option = atoi(argv[3]);
+	readFile(file, head, option);
 	printList(head);
 	sortList(&head);
 	printList(head);
