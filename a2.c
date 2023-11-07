@@ -116,6 +116,10 @@ void freeList(Student_t *head) {
 
 // Function to compare by year
 int compareByYear(Student_t *a, Student_t *b) {
+	if (a->birth_year == NULL && b->birth_year != NULL) return 1;
+	if (a->birth_year != NULL && b->birth_year == NULL) return -1;
+	if (a->birth_year == NULL && b->birth_year == NULL) return 0;
+
 	if (atoi(a->birth_year) < atoi(b->birth_year)) return -1; // a is less than b
 	if (atoi(a->birth_year) > atoi(b->birth_year)) return 1; // a is greater than b
 	return 0; // a is equal to b
@@ -123,6 +127,10 @@ int compareByYear(Student_t *a, Student_t *b) {
 
 // Function to compare by month
 int compareByMonth(Student_t *a, Student_t *b) {
+	if (a->birth_month == NULL && b->birth_month != NULL) return 1;
+	if (a->birth_month != NULL && b->birth_month == NULL) return -1;
+	if (a->birth_month == NULL && b->birth_month == NULL) return 0;
+
 	// Get the index of the month from the months array
 	int a_index = 0;
 	int b_index = 0;
@@ -139,6 +147,10 @@ int compareByMonth(Student_t *a, Student_t *b) {
 
 // Function to compare by day
 int compareByDay(Student_t *a, Student_t *b) {
+	if (a->birth_day == NULL && b->birth_day != NULL) return 1;
+	if (a->birth_day != NULL && b->birth_day == NULL) return -1;
+	if (a->birth_day == NULL && b->birth_day == NULL) return 0;
+
 	if (atoi(a->birth_day) < atoi(b->birth_day)) return -1; // a is less than b
 	if (atoi(a->birth_day) > atoi(b->birth_day)) return 1; // a is greater than b
 	return 0; // a is equal to b
@@ -146,16 +158,28 @@ int compareByDay(Student_t *a, Student_t *b) {
 
 // Function to compare by last name
 int compareByLastName(Student_t *a, Student_t *b) {
+	if (a->last_name == NULL && b->last_name != NULL) return 1;
+	if (a->last_name != NULL && b->last_name == NULL) return -1;
+	if (a->last_name == NULL && b->last_name == NULL) return 0;
+
 	return strcmp(a->last_name, b->last_name);
 }
 
 // Function to compare by first name
 int compareByFirstName(Student_t *a, Student_t *b) {
+	if (a->first_name == NULL && b->first_name != NULL) return 1;
+	if (a->first_name != NULL && b->first_name == NULL) return -1;
+	if (a->first_name == NULL && b->first_name == NULL) return 0;
+
 	return strcmp(a->first_name, b->first_name);
 }
 
 // Function to compare by GPA
 int compareByGPA(Student_t *a, Student_t *b) {
+	if (a->gpa == NULL && b->gpa != NULL) return 1;
+	if (a->gpa != NULL && b->gpa == NULL) return -1;
+	if (a->gpa == NULL && b->gpa == NULL) return 0;
+
 	double gpa_a = atof(a->gpa);
 	double gpa_b = atof(b->gpa);
 
@@ -182,6 +206,10 @@ int compareByTOEFL(Student_t *a, Student_t *b) {
 
 // Function to compare by student status
 int compareByStatus(Student_t *a, Student_t *b) {
+	if (a->student_status == NULL && b->student_status != NULL) return 1;
+	if (a->student_status != NULL && b->student_status == NULL) return -1;
+	if (a->student_status == NULL && b->student_status == NULL) return 0;
+
 	return strcmp(a->student_status, b->student_status);
 }
 
@@ -190,14 +218,14 @@ int compareStudents(Student_t *a, Student_t *b) {
 	int result;
 
 	// Use each compare function in the given order until a difference is found
-//	if ((result = compareByYear(a, b)) != 0) return result;
-//	if ((result = compareByMonth(a, b)) != 0) return result;
-//	if ((result = compareByDay(a, b)) != 0) return result;
-//	if ((result = compareByLastName(a, b)) != 0) return result;
-//	if ((result = compareByFirstName(a, b)) != 0) return result;
-//	if ((result = compareByGPA(a, b)) != 0) return result;
-//	if ((result = compareByTOEFL(a, b)) != 0) return result;
-//	if ((result = compareByStatus(a, b)) != 0) return result;
+	if ((result = compareByYear(a, b)) != 0) return result;
+	if ((result = compareByMonth(a, b)) != 0) return result;
+	if ((result = compareByDay(a, b)) != 0) return result;
+	if ((result = compareByLastName(a, b)) != 0) return result;
+	if ((result = compareByFirstName(a, b)) != 0) return result;
+	if ((result = compareByGPA(a, b)) != 0) return result;
+	if ((result = compareByTOEFL(a, b)) != 0) return result;
+	if ((result = compareByStatus(a, b)) != 0) return result;
 
 	return 0; // a is equal to b
 }
@@ -259,25 +287,6 @@ void sortList(Student_t **head) {
 
 	*head = mergeList(left, right);
 }
-
-// Condition to sort by year of birth
-// Condition to sort by month of birth
-// Condition to sort by day of birth - Assume  
-// Condition to sort by last name - Assume everyone has a last name. Output case same as input.
-// Condition to sort by first name - Assume everyone has a first name. Output case same as input.
-// Condition to sort by GPA - Assume everyone has a GPA up to 3 decimal places
-// Condition to sort by TOEFL
-// Condition to sort by student_status
-// Function to merge sort
-// Function to read
-
-// Function to check if first or last name data (if not first/second str, then invalid format)
-// Function to check if birth data (if <1950 or >2010, then invalid format)
-// Function to check if GPA data (if >3 decimal places, then invalid format)
-// Function to check if status data (
-// Function to check if TOEFL data (if domestic student, then invalid format)
-// 
-// There are 6 strings per line.
 
 /**
  * Function to check if valid name.
@@ -354,6 +363,9 @@ void addDate(char *date, Student_t *node) {
 	printf("Date is valid.\n\n");
 }
 
+/**
+ * Function to check if valid GPA.
+ */
 void addGPA(char *gpa, Student_t *node) {
 	printf("%s\n", gpa);
 	char *ptr;
@@ -368,6 +380,10 @@ void addGPA(char *gpa, Student_t *node) {
 	printf("GPA is valid.\n\n");
 }
 
+/**
+ * Function to check if valid status.
+ * Valid status is either D or I.
+ */
 void addStatus(char *status, Student_t *node) {
 	if (status == NULL || (strcmp(status, "D") != 0 && strcmp(status, "I") != 0)) callError();
 
@@ -376,6 +392,10 @@ void addStatus(char *status, Student_t *node) {
 	printf("Status is valid.\n\n");
 }
 
+/**
+ * Function to check if valid TOEFL.
+ * Valid TOEFL is between 0 and 120.
+ */
 void addTOEFL(char *toefl, Student_t *node) {
 	if ((strcmp(node->student_status, "D") == 0) && (toefl != NULL)) callError();
 	if ((strcmp(node->student_status, "I") == 0) && (toefl == NULL)) callError();
@@ -453,6 +473,8 @@ int main(int argc, char *argv[]) {
 	readFile(file, head);
 	printList(head);
 	sortList(&head);
+	//int result = compareByName(head, head->next);
+	//printf("%d\n", result);
 	printList(head);
 
 
