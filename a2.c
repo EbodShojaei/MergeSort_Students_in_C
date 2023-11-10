@@ -344,7 +344,6 @@ void addDate(char *date, Student_t *node) {
 
 	while (data != NULL) {
 		counter++;
-		printf("%d\n", counter);
 		switch (counter) {
 			case 1: // Month
 				// Check if equals to one of the months
@@ -402,7 +401,6 @@ void addGPA(char *gpa, Student_t *node) {
  */
 void addStatus(char *status, Student_t *node) {
 	char *error_message = "Error: Invalid status.";
-	if (!isalpha(status)) callError(error_message);
 	if (status == NULL || (strcmp(status, "D") != 0 && strcmp(status, "I") != 0)) callError(error_message);
 
 	node->status = strdup(status);
