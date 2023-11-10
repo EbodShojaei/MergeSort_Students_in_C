@@ -338,12 +338,13 @@ void addDate(char *date, Student_t *node) {
 	// Delimit each dash e.g., Month-Day-Year
 	int counter = 0;
 	char *delimiter = "-";
-	char *data = strtok_r(date, delimiter, &date); 
+	char *ptr;
+	char *data = strtok_r(date, delimiter, &ptr); 
+	char *end_ptr;
 
 	while (data != NULL) {
-		//printf("%s\n", data);
 		counter++;
-		
+		printf("%d\n", counter);
 		switch (counter) {
 			case 1: // Month
 				// Check if equals to one of the months
@@ -354,24 +355,28 @@ void addDate(char *date, Student_t *node) {
 				if (node->birth_month == NULL) callError("Error: Invalid month.");
 				break;
 			case 2: // Day
+				// Check if number and not other characters
+				long day = strtol(data, &end_ptr, 10); // Convert string to int
+				
 				// Check if number is between 1 and 31
-				if (atoi(data) < 1 || atoi(data) > 31) callError("Error: Invalid day.");
+				if (*end_ptr != '\0' || day < 1 || day > 31) callError("Error: Invalid day.");
 				node->birth_day = strdup(data);
 				if (node->birth_day == NULL) callError("Error: Invalid day.");
 				break;
 			case 3: // Year
+				// Check if number and not other characters
+				long year = strtol(data, &end_ptr, 10); // Convert string to int
+				
 				// Check if number is between 1950 and 2010
-				if (atoi(data) < 1950 || atoi(data) > 2010) callError("Error: Invalid year.");
+				if (*end_ptr != '\0' || year < 1950 || year > 2010) callError("Error: Invalid year.");
 				node->birth_year = strdup(data);
 				if (node->birth_year == NULL) callError("Error: Invalid year.");
 				break;
 			default:
 				callError("Error: Invalid date format.");
 		}
-		data = strtok_r(NULL, delimiter, &date); // Gets the next string
+		data = strtok_r(NULL, delimiter, &ptr); // Gets the next string
 	}
-
-	//printf("Date is valid.\n\n");
 }
 
 /**
@@ -397,7 +402,7 @@ void addGPA(char *gpa, Student_t *node) {
  */
 void addStatus(char *status, Student_t *node) {
 	char *error_message = "Error: Invalid status.";
-	
+	if (!isalpha(status)) callError(error_message);
 	if (status == NULL || (strcmp(status, "D") != 0 && strcmp(status, "I") != 0)) callError(error_message);
 
 	node->status = strdup(status);
@@ -480,11 +485,11 @@ void readFile(FILE *input, Student_t *head, const int option) {
 	if (input == NULL) callError("Error: Could not read file."); // Error handle reading file
 
 	Student_t *current = head;
-	char c;
-	char last_char;
-	char *buffer = (char *) malloc(sizeof(char) * 20);
+	int size = 20;
+	char *buffer = (char *) malloc(sizeof(char) * size);
 	if (buffer == NULL) callError("Error: Memory could not be allocated.");
 
+	char c;
 	char *word = buffer; // Pointer to buffer
 	int word_count = 0;
 	int word_length = 0;
@@ -507,10 +512,9 @@ void readFile(FILE *input, Student_t *head, const int option) {
 			fclose(input);
 			callError("Error: Too many fields."); 
 		}
-		if (word_length >= 19) { // Error handle too long of a word
-			free(buffer);
-			fclose(input);
-			callError("Error: Exceeded max token length.");
+		if (word_length >= (size - 1)) { // Reallocate memory if word is too long
+			size *= 2;
+			buffer = (char *) realloc(buffer, sizeof(char) * size);
 		}
 
 		if (!isspace(c)) {
@@ -537,9 +541,8 @@ void readFile(FILE *input, Student_t *head, const int option) {
 		}
 		// Reset word count if end of line
 		if (c == '\n') {
-			last_char = c;
-
 			// Error handle empty line
+			// Only last line can be empty
 			if (word_count == 0) {
 				char next_char = fgetc(input); // Peek next character
 				if (next_char != EOF) callError("Error: Empty line is invalid format.");
@@ -557,7 +560,6 @@ void readFile(FILE *input, Student_t *head, const int option) {
 			addStudent(&head, &current, option);
 		}
 	} 
-	if (last_char != '\n') callError("Error: Invalid format."); // Error handle last line not ending with line break
 	free(buffer);
 }
 
@@ -579,6 +581,8 @@ void writeFile(FILE *output, Student_t *head) {
 		if (current->next != NULL) fprintf(output, "\n");
 		current = current->next;
 	}
+	// Output file must end with a new line
+	fprintf(output, "\n");
 
 	// Close the output file
 	fclose(output);
