@@ -355,7 +355,7 @@ void addDate(char *date, Student_t *node) {
 				break;
 			case 2: // Day
 				// Check if number and not other characters
-				if (data[0] == '0') callError("Error: Invalid day.");
+				if (data[0] == '0') callError("Error: Invalid day."); // If leading zero, error
 				long day = strtol(data, &end_ptr, 10); // Convert string to int
 				
 				// Check if number is between 1 and 31
@@ -365,6 +365,7 @@ void addDate(char *date, Student_t *node) {
 				break;
 			case 3: // Year
 				// Check if number and not other characters
+				if (data[0] == '0') callError("Error: Invalid year."); // If leading zero, error
 				long year = strtol(data, &end_ptr, 10); // Convert string to int
 				
 				// Check if number is between 1950 and 2010
@@ -384,7 +385,8 @@ void addDate(char *date, Student_t *node) {
  */
 void addGPA(char *gpa, Student_t *node) {
 	char *error_message = "Error: Invalid GPA.";
-	
+	if (gpa[0] == '0') callError(error_message); // If leading zero, error
+
 	char *ptr;
 	double val = strtod(gpa, &ptr); // Convert string to double
 
@@ -419,6 +421,8 @@ void addTOEFL(char *toefl, Student_t *node) {
 	if ((strcmp(node->status, "I") == 0) && (toefl == NULL)) callError(error_message);
 
 	if (toefl != NULL) {
+		if (toefl[0] == '0') callError(error_message);
+
 		char *end_ptr;
 		long val = strtol(toefl, &end_ptr, 10); // Convert string to int
 	
