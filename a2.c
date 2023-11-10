@@ -355,6 +355,7 @@ void addDate(char *date, Student_t *node) {
 				break;
 			case 2: // Day
 				// Check if number and not other characters
+				if (data[0] == '0') callError("Error: Invalid day.");
 				long day = strtol(data, &end_ptr, 10); // Convert string to int
 				
 				// Check if number is between 1 and 31
