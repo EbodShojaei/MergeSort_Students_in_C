@@ -512,7 +512,14 @@ void readFile(FILE *input, Student_t *head, const int option) {
 		}
 		if (word_length >= (size - 1)) { // Reallocate memory if word is too long
 			size *= 2;
-			buffer = (char *) realloc(buffer, sizeof(char) * size);
+			char *temp = (char *) realloc(buffer, sizeof(char) * size);
+			if (temp == NULL) {
+				free(buffer);
+				fclose(input);
+				callError("Error: Memory could not be allocated.");
+			}
+			buffer = temp;
+			word = buffer + word_length; // Continue building string from last char
 		}
 
 		if (!isspace(c)) {
