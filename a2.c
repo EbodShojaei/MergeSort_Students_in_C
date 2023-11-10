@@ -1,7 +1,11 @@
 # include <stdio.h>
 # include <stdlib.h>
+# include <stdbool.h>
 # include <string.h>
 # include <ctype.h>
+
+// Global error output
+const char *error_output;
 
 // Create a struct for the entity
 typedef struct Student {
@@ -11,7 +15,7 @@ typedef struct Student {
 	char *birth_day; // Ranges from 1 to 31
 	char *birth_year; // Ranges from 1950 to 2010
 	char *gpa; // Ranges from 0.0 to 4.3
-	char *student_status; // Either Domestic (D) or International (I)
+	char *status; // Either Domestic (D) or International (I)
 	char *toefl; // Ranges from 0 to 120
 
 	struct Student *next;
@@ -27,29 +31,12 @@ const char *months[] = {
  * Function to call error.
  * Prints error message and exits.
  */
-void callError() {
-	printf("Error: Invalid input format.\n");
+void callError(char *message) {
+	FILE *file = fopen(error_output, "w");
+	printf("%s\n", message);
+	fprintf(file, "%s\n", message);
+	fclose(file);
 	exit(1);
-}
-
-/**
- * Function to print the linked list.
- * Prints by all fields.
- */
-void printList(Student_t *head) {
-	Student_t *current = head;
-	while (current != NULL) {
-		if (current->first_name != NULL) printf("%s ", current->first_name);
-		if (current->last_name != NULL) printf("%s ", current->last_name);
-		if (current->birth_month != NULL) printf("%s-", current->birth_month);
-		if (current->birth_day != NULL) printf("%s-", current->birth_day);
-		if (current->birth_year != NULL) printf("%s ", current->birth_year);
-		if (current->gpa != NULL) printf("%s ", current->gpa);
-		if (current->student_status != NULL) printf("%s ", current->student_status);
-		if (current->toefl != NULL) printf("%s ", current->toefl);
-		printf("\n");
-		current = current->next;
-	}
 }
 
 /**
@@ -59,7 +46,7 @@ void printList(Student_t *head) {
  */
 Student_t *createNode() {
 	Student_t *node = (Student_t *) malloc(sizeof(Student_t));
-	if (node == NULL) callError();
+	if (node == NULL) callError("Error: Memory could not be allocated.");
 
 	node->first_name = NULL;
 	node->last_name = NULL;
@@ -67,7 +54,7 @@ Student_t *createNode() {
 	node->birth_day = NULL;
 	node->birth_year = NULL;
 	node->gpa = NULL;
-	node->student_status = NULL;
+	node->status = NULL;
 	node->toefl = NULL;
 	node->next = NULL;
 
@@ -216,11 +203,11 @@ int compareByTOEFL(Student_t *a, Student_t *b) {
  * Domestic precedes international.
  */
 int compareByStatus(Student_t *a, Student_t *b) {
-	if (a->student_status == NULL && b->student_status != NULL) return 1;
-	if (a->student_status != NULL && b->student_status == NULL) return -1;
-	if (a->student_status == NULL && b->student_status == NULL) return 0;
+	if (a->status == NULL && b->status != NULL) return 1;
+	if (a->status != NULL && b->status == NULL) return -1;
+	if (a->status == NULL && b->status == NULL) return 0;
 
-	return strcmp(a->student_status, b->student_status);
+	return strcmp(a->status, b->status);
 }
 
 /**
@@ -316,13 +303,14 @@ void sortList(Student_t **head) {
  * Checks first last name.
  */
 void addFirstName(char *name, Student_t *node) {
+	char *error_message = "Error: Invalid first name.";
+
 	// If the name does not contain letters, error.
 	for (int i = 0; i < strlen(name); i++)
-		if (!isalpha(name[i])) callError();
+		if (!isalpha(name[i])) callError(error_message);
 
 	node->first_name = strdup(name);
-	if (node->first_name == NULL) callError();
-	//printf("Name is valid.\n\n");
+	if (node->first_name == NULL) callError(error_message);
 }
 
 /**
@@ -331,13 +319,14 @@ void addFirstName(char *name, Student_t *node) {
  * Checks last name.
  */
 void addLastName(char *name, Student_t *node) {
+	char *error_message = "Error: Invalid last name.";
+
 	// If the name does not contain letters, error.
 	for (int i = 0; i < strlen(name); i++)
-		if (!isalpha(name[i])) callError();
+		if (!isalpha(name[i])) callError(error_message);
 
 	node->last_name = strdup(name);
-	if (node->last_name == NULL) callError();
-	//printf("Name is valid.\n\n");
+	if (node->last_name == NULL) callError(error_message);
 }
 
 /**
@@ -360,24 +349,24 @@ void addDate(char *date, Student_t *node) {
 				// Check if equals to one of the months
 				for (int i = 0; i < 12; i++)
 					if (strcmp(data, months[i]) == 0) break;
-					else if (i == 11) callError();
+					else if (i == 11) callError("Error: Invalid month.");
 				node->birth_month = strdup(data);
-				if (node->birth_month == NULL) callError();
+				if (node->birth_month == NULL) callError("Error: Invalid month.");
 				break;
 			case 2: // Day
 				// Check if number is between 1 and 31
-				if (atoi(data) < 1 || atoi(data) > 31) callError();
+				if (atoi(data) < 1 || atoi(data) > 31) callError("Error: Invalid day.");
 				node->birth_day = strdup(data);
-				if (node->birth_day == NULL) callError();
+				if (node->birth_day == NULL) callError("Error: Invalid day.");
 				break;
 			case 3: // Year
 				// Check if number is between 1950 and 2010
-				if (atoi(data) < 1950 || atoi(data) > 2010) callError();
+				if (atoi(data) < 1950 || atoi(data) > 2010) callError("Error: Invalid year.");
 				node->birth_year = strdup(data);
-				if (node->birth_year == NULL) callError();
+				if (node->birth_year == NULL) callError("Error: Invalid year.");
 				break;
 			default:
-				callError();
+				callError("Error: Invalid date format.");
 		}
 		data = strtok_r(NULL, delimiter, &date); // Gets the next string
 	}
@@ -389,17 +378,17 @@ void addDate(char *date, Student_t *node) {
  * Function to check if valid GPA.
  */
 void addGPA(char *gpa, Student_t *node) {
-	//printf("%s\n", gpa);
+	char *error_message = "Error: Invalid GPA.";
+	
 	char *ptr;
 	double val = strtod(gpa, &ptr); // Convert string to double
 
-	if (*ptr != '\0') callError(); // If there is a character, error
-	if (val < 0.0 || val > 4.3) callError(); // If out of range, error
-	if (strlen(gpa) > 5) callError(); // If more than 3 decimal places, error
+	if (*ptr != '\0') callError(error_message); // If there is a character, error
+	if (val < 0.0 || val > 4.3) callError(error_message); // If out of range, error
+	if (strlen(gpa) > 5) callError(error_message); // If more than 3 decimal places, error
 
 	node->gpa = strdup(gpa);
-	if (node->gpa == NULL) callError();
-	//printf("GPA is valid.\n\n");
+	if (node->gpa == NULL) callError(error_message);
 }
 
 /**
@@ -407,11 +396,12 @@ void addGPA(char *gpa, Student_t *node) {
  * Valid status is either D or I.
  */
 void addStatus(char *status, Student_t *node) {
-	if (status == NULL || (strcmp(status, "D") != 0 && strcmp(status, "I") != 0)) callError();
+	char *error_message = "Error: Invalid status.";
+	
+	if (status == NULL || (strcmp(status, "D") != 0 && strcmp(status, "I") != 0)) callError(error_message);
 
-	node->student_status = strdup(status);
-	if (node->student_status == NULL) callError();
-	//printf("Status is valid.\n\n");
+	node->status = strdup(status);
+	if (node->status == NULL) callError(error_message);
 }
 
 /**
@@ -419,77 +409,156 @@ void addStatus(char *status, Student_t *node) {
  * Valid TOEFL is between 0 and 120.
  */
 void addTOEFL(char *toefl, Student_t *node) {
-	if ((strcmp(node->student_status, "D") == 0) && (toefl != NULL)) callError();
-	if ((strcmp(node->student_status, "I") == 0) && (toefl == NULL)) callError();
+	char *error_message = "Error: Invalid TOEFL.";
+	
+	if ((strcmp(node->status, "D") == 0) && (toefl != NULL)) callError(error_message);
+	if ((strcmp(node->status, "I") == 0) && (toefl == NULL)) callError(error_message);
 
 	if (toefl != NULL) {
 		char *end_ptr;
 		long val = strtol(toefl, &end_ptr, 10); // Convert string to int
 	
-		if (*end_ptr != '\0' || val < 0 || val > 120) callError(); // If out of range, error
+		if (*end_ptr != '\0' || val < 0 || val > 120) callError(error_message); // If out of range, error
 
 		node->toefl = strdup(toefl);
-		if (node->toefl == NULL) callError();
-		//printf("TOEFL is valid.\n\n");
+		if (node->toefl == NULL) callError(error_message);
+	}
+}
+
+/**
+ * Function to add a Student to a linked list.
+ */
+void addStudent(Student_t **head, Student_t **current, int option) {
+		// Append Student to linked list
+		switch (option) {
+			case 1: // Domestic
+				if (strcmp((*current)->status, "D") == 0) {
+					appendList(head, createNode());
+					*current = (*current)->next;
+				} else {
+					freeList(*current);
+					*current = createNode();
+				}
+				break;
+			case 2: // International
+				if (strcmp((*current)->status, "I") == 0) { 
+					appendList(head, createNode());
+					*current = (*current)->next;
+				} else {
+					freeList(*current);
+					*current = createNode();
+				}
+				break;
+			case 3: // All
+				appendList(head, createNode());
+				*current = (*current)->next;
+				break;
+			default: callError("Error: Invalid option.");
+		}
+
+}
+
+/**
+ * Function to process word into Student struct.
+ */
+void processWord(char *word, Student_t *current, int word_count) {
+	switch (word_count) {
+		case 1: addFirstName(word, current); break;
+		case 2: addLastName(word, current); break;
+		case 3: addDate(word, current); break;
+		case 4: addGPA(word, current); break;
+		case 5: addStatus(word, current); break;
+		case 6: addTOEFL(word, current); break;
+		default: callError("Error: Incorrect input format.");
 	}
 }
 
 /**
  * Function to read text from input file. 
- * Checks conditions meeting fields.
  */ 
 void readFile(FILE *input, Student_t *head, const int option) {
+	if (input == NULL) callError("Error: Could not read file."); // Error handle reading file
+
 	Student_t *current = head;
+	char c;
+	char last_char;
+	char *buffer = (char *) malloc(sizeof(char) * 20);
+	if (buffer == NULL) callError("Error: Memory could not be allocated.");
 
-	// Read in each line
-	char *line = (char *) malloc(256 * sizeof(char));
-	while (fgets(line, 256, input)) {
-		int counter = 0; // Reset on new line. Up to 6 inputs
-		char *delimiter = " \n";
-		char *word = strtok(line, delimiter); // Gets the first string
-		
-		// Parse each string by space
-		while (word != NULL) {
-			if (counter > 6) callError();
-			//printf("Token: %s\n", word);
-			counter++;
+	char *word = buffer; // Pointer to buffer
+	int word_count = 0;
+	int word_length = 0;
+	int space_count = 0;
+	bool in_word = false;
 
-			switch (counter) {
-				case 1: addFirstName(word, current); break;
-				case 2: addLastName(word, current); break;
-				case 3: addDate(word, current); break;
-				case 4: addGPA(word, current); break;
-				case 5: addStatus(word, current); break;
-				case 6: addTOEFL(word, current); break;
-				default: callError();
+	while ((c = fgetc(input)) != EOF) {
+		if (ferror(input)) { // Error handle reading file
+			free(buffer);
+			fclose(input);
+			callError("Error: Could not read file.");
+		}
+		if (space_count > 1) { // Error handle consecutive spaces
+			free(buffer);
+			fclose(input);
+			callError("Error: Consecutive spaces is invalid format.");
+		}
+		if (word_count > 6) { // Error handle too many words
+			free(buffer);
+			fclose(input);
+			callError("Error: Too many fields."); 
+		}
+		if (word_length >= 19) { // Error handle too long of a word
+			free(buffer);
+			fclose(input);
+			callError("Error: Exceeded max token length.");
+		}
+
+		if (!isspace(c)) {
+			if (!in_word) { // Start of word 
+				word_count++;
+				space_count = 0;
+				in_word = true;
 			}
-			word = strtok(NULL, delimiter); // Gets the next string
+			*word++ = c;
+			word_length++;
+		} else if (isspace(c)) {
+			if (c != '\n' && word_count == 0) 
+				callError("Error: Leading spaces is invalid format."); // Error handle leading spaces
+		
+			if (in_word) { // End of word
+				*word = '\0';
+				processWord(buffer, current, word_count); // Process word	
+				word = buffer; // Reset word
+				memset(buffer, 0, 20); // Reset buffer
+				word_length = 0;
+				in_word = false;
+			}
+			space_count++;
 		}
-		switch (option) {
-			case 1: // Domestic
-				if (strcmp(current->student_status, "D") == 0) {
-					appendList(&head, createNode());
-					current = current->next;
-				} else {
-					freeList(current);
-					current = createNode();
-				}
-				break;
-			case 2: // International
-				if (strcmp(current->student_status, "I") == 0) { 
-					appendList(&head, createNode());
-					current = current->next;
-				} else {
-					freeList(current);
-					current = createNode();
-				}
-				break;
-			case 3: // All
-				appendList(&head, createNode());
-				current = current->next;
-				break;
+		// Reset word count if end of line
+		if (c == '\n') {
+			last_char = c;
+
+			// Error handle empty line
+			if (word_count == 0) {
+				char next_char = fgetc(input); // Peek next character
+				if (next_char != EOF) callError("Error: Empty line is invalid format.");
+				else break;
+			}
+			
+			// Error handle trailing spaces
+			if (space_count > 1) callError("Error: Trailing spaces is invalid format.");
+			
+			// Reset counts for next line
+			word_count = 0;
+			space_count = 0;
+		
+			// Append Student to linked list
+			addStudent(&head, &current, option);
 		}
-	}
+	} 
+	if (last_char != '\n') callError("Error: Invalid format."); // Error handle last line not ending with line break
+	free(buffer);
 }
 
 /**
@@ -505,7 +574,7 @@ void writeFile(FILE *output, Student_t *head) {
 		if (current->birth_day != NULL) fprintf(output, "%s-", current->birth_day);
 		if (current->birth_year != NULL) fprintf(output, "%s ", current->birth_year);
 		if (current->gpa != NULL) fprintf(output, "%s ", current->gpa);
-		if (current->student_status != NULL) fprintf(output, "%s ", current->student_status);
+		if (current->status != NULL) fprintf(output, "%s ", current->status);
 		if (current->toefl != NULL) fprintf(output, "%s ", current->toefl);
 		if (current->next != NULL) fprintf(output, "\n");
 		current = current->next;
@@ -533,37 +602,34 @@ void writeFile(FILE *output, Student_t *head) {
  */
 int main(int argc, char *argv[]) {
 	if (argc != 4) {
-		printf("Error: Usage %s <input_file> <output_file> <option>\n", argv[0]);
-		return 1;
+		printf("Usage %s <input_file> <output_file> <option>\n", argv[0]);
+		callError("Error: Invalid number of arguments.");
 	}
 
-	const char *input_name = argv[1];
+	const char *input_name = argv[1]; // Input file name
+	const char *output_name = argv[2]; // Output file name
+	error_output = output_name; // Set global error output
+	
 	FILE *file = fopen(input_name, "r");
+	if (file == NULL) callError("Error: Input file not found.");
 
-	if (file == NULL) {
-		printf("Error: File not found.\n");
-		return 1;
-	}
-	Student_t *head = createNode();
+	fseek(file, 0, SEEK_END); // Ensure cursor at end of file
+	if (ftell(file) == 0) callError("Error: Input file is empty.");
+	fseek(file, 0, SEEK_SET); // Ensure cursor at start of file
 
 	const int option = atoi(argv[3]);
 	if (option < 1 || option > 3) {
-		printf("Error: Usage %s <input_file> <output_file> <option>\n", argv[0]);
-		return 1;
+		printf("Usage %s <input_file> <output_file> <option>\n", argv[0]);
+		callError("Error: Invalid option.");
 	}
+	Student_t *head = createNode();
 	readFile(file, head, option);
-//	printList(head);
 	sortList(&head);
-//	printList(head);
-
 	fclose(file);
 
-	const char *output_name = argv[2];
 	file = fopen(output_name, "w");
-	
 	if (file == NULL) {
-		printf("Error: File could not open.\n");
-		return 1;
+		callError("Error: Output file could not open.");
 	}
 	writeFile(file, head);
 
