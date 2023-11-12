@@ -33,8 +33,9 @@ const char *months[] = {
  */
 void callError(char *message) {
 	FILE *file = fopen(error_output, "w");
-	printf("%s\n\n", message);
-	fprintf(file, "%s\n\n", message);
+	printf("%s\n", message);
+	fprintf(file, "%s\n", message);
+	fprintf(file, "\n");
 	fclose(file);
 	exit(1);
 }
