@@ -32,8 +32,10 @@ const char *months[] = {
  * Prints error message and exits.
  */
 void callError(char *message) {
-	FILE *file = fopen(error_output, "w");
 	printf("%s\n", message);
+	printf("\n");
+	if (error_output == NULL) exit(1);
+	FILE *file = fopen(error_output, "w");
 	fprintf(file, "%s\n", message);
 	fprintf(file, "\n");
 	fclose(file);
@@ -599,6 +601,7 @@ void writeFile(FILE *output, Student_t *head) {
 	fclose(output);
 
 	printf("Successfully wrote to output file.\n");
+	printf("\n");
 }
 
 /**
