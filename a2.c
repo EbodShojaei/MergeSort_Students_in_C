@@ -496,7 +496,9 @@ void readFile(FILE *input, Student_t *head, const int option) {
 	if (buffer == NULL) callError("Error: Memory could not be allocated.");
 
 	char c;
+	char last_char;
 	char *word = buffer; // Pointer to buffer
+	int characters = 0;
 	int word_count = 0;
 	int word_length = 0;
 	int space_count = 0;
@@ -557,9 +559,10 @@ void readFile(FILE *input, Student_t *head, const int option) {
 			// Error handle empty line
 			// Only last line can be empty
 			if (word_count == 0) {
+				last_char = (char) c;
 				char next_char = fgetc(input); // Peek next character
-				if (next_char != EOF) callError("Error: Empty line is invalid format.");
-				else break;
+				if (next_char == EOF && characters != 0) break;
+				else callError("Error: Empty line is invalid format.");
 			}
 			
 			// Error handle trailing spaces
@@ -572,8 +575,10 @@ void readFile(FILE *input, Student_t *head, const int option) {
 			// Append Student to linked list
 			addStudent(&head, &current, option);
 		}
-	} 
+		characters++;
+	} // End of while loop
 	free(buffer);
+	if (last_char != '\n') callError("Error: Last line is invalid format.");
 }
 
 /**
