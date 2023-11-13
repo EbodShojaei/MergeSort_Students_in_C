@@ -635,9 +635,6 @@ int main(int argc, char *argv[]) {
 	
 	FILE *file = fopen(input_name, "r");
 	if (file == NULL) callError("Error: Input file not found.");
-
-	fseek(file, 0, SEEK_END); // Ensure cursor at end of file
-	if (ftell(file) == 0) callError("Error: Input file is empty.");
 	fseek(file, 0, SEEK_SET); // Ensure cursor at start of file
 
 	const int option = atoi(argv[3]);
