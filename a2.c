@@ -37,7 +37,7 @@ void callError(char *message) {
 	if (error_output == NULL) exit(1);
 	FILE *file = fopen(error_output, "w");
 	fprintf(file, "%s\n", message);
-	fprintf(file, "\n");
+	// fprintf(file, "\n");
 	fclose(file);
 	exit(1);
 }
@@ -188,10 +188,10 @@ int compareByGPA(Student_t *a, Student_t *b) {
  */
 int compareByTOEFL(Student_t *a, Student_t *b) {
 	// If no TOEFL, then domestic
-	if (a->toefl == NULL && b->toefl != NULL) return 1; // a is domestic, b is international
-	if (a->toefl != NULL && b->toefl == NULL) return -1; // a is international, b is domestic
+	if (a->toefl == NULL && b->toefl != NULL) return -1; // a is domestic, b is international
+	if (a->toefl != NULL && b->toefl == NULL) return 1; // a is international, b is domestic
 	if (a->toefl == NULL && b->toefl == NULL) return 0; // Both are domestic
-	
+
 	// Both have TOEFL, so compare
 	int toefl_a = atoi(a->toefl);
 	int toefl_b = atoi(b->toefl);
@@ -564,14 +564,14 @@ void readFile(FILE *input, Student_t *head, const int option) {
 				if (next_char == EOF && characters != 0) break;
 				else callError("Error: Empty line is invalid format.");
 			}
-			
+
 			// Error handle trailing spaces
 			if (space_count > 1) callError("Error: Trailing spaces is invalid format.");
-			
+
 			// Reset counts for next line
 			word_count = 0;
 			space_count = 0;
-		
+
 			// Append Student to linked list
 			addStudent(&head, &current, option);
 		}
@@ -594,13 +594,14 @@ void writeFile(FILE *output, Student_t *head) {
 		if (current->birth_day != NULL) fprintf(output, "%s-", current->birth_day);
 		if (current->birth_year != NULL) fprintf(output, "%s ", current->birth_year);
 		if (current->gpa != NULL) fprintf(output, "%s ", current->gpa);
-		if (current->status != NULL) fprintf(output, "%s ", current->status);
-		if (current->toefl != NULL) fprintf(output, "%s ", current->toefl);
+		if (current->status != NULL && *current->status == 'D') fprintf(output, "%s", current->status);
+		else if (current->status != NULL && *current->status == 'I') fprintf(output, "%s ", current->status);
+		if (current->toefl != NULL) fprintf(output, "%s", current->toefl);
 		if (current->next != NULL) fprintf(output, "\n");
 		current = current->next;
 	}
 	// Output file must end with a new line
-	fprintf(output, "\n");
+	// fprintf(output, "\n");
 
 	// Close the output file
 	fclose(output);
@@ -624,6 +625,15 @@ void writeFile(FILE *output, Student_t *head) {
  * 		"Mary Jackson Feb-2-1990 4.0 I 60"
  */
 int main(int argc, char *argv[]) {
+	char *ANum = "A01351112";
+	FILE *outputFile = fopen(ANum, "w");
+	if (outputFile == NULL) {
+		printf("Error: Failed to create output file.\n");
+		return 1;
+	}
+
+	fclose(outputFile);
+
 	if (argc != 4) {
 		printf("Usage %s <input_file> <output_file> <option>\n", argv[0]);
 		callError("Error: Invalid number of arguments.");
