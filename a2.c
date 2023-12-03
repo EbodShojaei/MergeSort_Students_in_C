@@ -21,6 +21,12 @@ typedef struct Student {
 	struct Student *next;
 } Student_t;
 
+typedef struct Table {
+	Student_t *domestic;
+	Student_t *international;
+	Student_t *all;
+} Table;
+
 // Months array
 const char *months[] = {
 	"Jan", "Feb", "Mar", "Apr", "May", "Jun", 
@@ -68,27 +74,37 @@ Student_t *createNode() {
  * Function to append a node to the end of the linked list.
  * If the head is NULL, then the head is the node.
  */
-void appendList(Student_t **head, Student_t *next) {
-	Student_t *current = *head;
-	if (current == NULL) {
-		*head = next;
+void appendList(Student_t **head, Student_t *new_node) {
+	if (head == NULL || new_node == NULL) callError("Error: NULL argument.");
+	if (*head == NULL) {
+		*head = new_node;
 		return;
 	}
-
+	Student_t *current = *head;
 	while (current->next != NULL) current = current->next;
-	current->next = next;
+	current->next = new_node;
 }
 
 /**
  * Function to free the linked list.
  * Frees by all fields.
  */
-void freeList(Student_t *head) {
-	if (head == NULL) return;
+void freeList(Student_t *node) {
+	while (node != NULL) {
+		Student_t *temp = node;
+		node = node->next;
 
-	// Free other dynamically allocated
-	freeList(head->next);
-	free(head);
+		// Free dynamically allocated strings within the node
+		if (temp->first_name != NULL) free(temp->first_name);
+		if (temp->last_name != NULL) free(temp->last_name);
+		if (temp->birth_month != NULL) free(temp->birth_month);
+		if (temp->birth_day != NULL) free(temp->birth_day);
+		if (temp->birth_year != NULL) free(temp->birth_year);
+		if (temp->gpa != NULL) free(temp->gpa);
+		if (temp->status != NULL) free(temp->status);
+		if (temp->toefl != NULL) free(temp->toefl);
+		free(temp);
+	}
 }
 
 /**
@@ -437,39 +453,6 @@ void addTOEFL(char *toefl, Student_t *node) {
 }
 
 /**
- * Function to add a Student to a linked list.
- */
-void addStudent(Student_t **head, Student_t **current, int option) {
-		// Append Student to linked list
-		switch (option) {
-			case 1: // Domestic
-				if (strcmp((*current)->status, "D") == 0) {
-					appendList(head, createNode());
-					*current = (*current)->next;
-				} else {
-					freeList(*current);
-					*current = createNode();
-				}
-				break;
-			case 2: // International
-				if (strcmp((*current)->status, "I") == 0) { 
-					appendList(head, createNode());
-					*current = (*current)->next;
-				} else {
-					freeList(*current);
-					*current = createNode();
-				}
-				break;
-			case 3: // All
-				appendList(head, createNode());
-				*current = (*current)->next;
-				break;
-			default: callError("Error: Invalid option.");
-		}
-
-}
-
-/**
  * Function to process word into Student struct.
  */
 void processWord(char *word, Student_t *current, int word_count) {
@@ -487,10 +470,10 @@ void processWord(char *word, Student_t *current, int word_count) {
 /**
  * Function to read text from input file. 
  */ 
-void readFile(FILE *input, Student_t *head, const int option) {
+void readFile(FILE *input, Student_t **head, const int option) {
 	if (input == NULL) callError("Error: Could not read file."); // Error handle reading file
 
-	Student_t *current = head;
+	Student_t *current = createNode();
 	int size = 20;
 	char *buffer = (char *) malloc(sizeof(char) * size);
 	if (buffer == NULL) callError("Error: Memory could not be allocated.");
@@ -541,8 +524,7 @@ void readFile(FILE *input, Student_t *head, const int option) {
 			*word++ = c;
 			word_length++;
 		} else if (isspace(c)) {
-			if (c != '\n' && word_count == 0) 
-				callError("Error: Leading spaces is invalid format."); // Error handle leading spaces
+			if (c != '\r' && c != '\n' && word_count == 0) callError("Error: Leading spaces is invalid format."); // Error handle leading spaces
 		
 			if (in_word) { // End of word
 				*word = '\0';
@@ -552,10 +534,14 @@ void readFile(FILE *input, Student_t *head, const int option) {
 				word_length = 0;
 				in_word = false;
 			}
+			if (c == '\r' ) {
+				char next_char = fgetc(input); // Peek next character
+				if (next_char != '\n') callError("Error: Carriage return is invalid format.");
+			}
 			space_count++;
 		}
 		// Reset word count if end of line
-		if (c == '\n') {
+		if ((c == '\r' || c == '\n') && space_count != 0) {
 			// Error handle empty line
 			// Only last line can be empty
 			if (word_count == 0) {
@@ -568,17 +554,31 @@ void readFile(FILE *input, Student_t *head, const int option) {
 			// Error handle trailing spaces
 			if (space_count > 1) callError("Error: Trailing spaces is invalid format.");
 
+			// Append Student to linked list
+			switch (option) {
+				case 1: // Domestic
+					if (current->status[0] == 'D') appendList(head, current);
+					else freeList(current);
+					break;
+				case 2: // International
+					if (current->status[0] == 'I') appendList(head, current);
+					else freeList(current);
+					break;
+				case 3: // All
+					appendList(head, current);
+					break;
+
+			}
+			current = createNode();
+
 			// Reset counts for next line
 			word_count = 0;
 			space_count = 0;
-
-			// Append Student to linked list
-			addStudent(&head, &current, option);
 		}
 		characters++;
 	} // End of while loop
 	free(buffer);
-	if (last_char != '\n') callError("Error: Last line is invalid format.");
+	if (last_char != 0 && last_char != '\r' && last_char != '\n') callError("Error: Last line is invalid format.");
 }
 
 /**
@@ -652,8 +652,14 @@ int main(int argc, char *argv[]) {
 		printf("Usage %s <input_file> <output_file> <option>\n", argv[0]);
 		callError("Error: Invalid option.");
 	}
+	Table *table = (Table *) malloc(sizeof(Table));
+	if (table == NULL) callError("Error: Memory could not be allocated.");
+	table->domestic = NULL;
+	table->international = NULL;
+	table->all = NULL;
+
 	Student_t *head = createNode();
-	readFile(file, head, option);
+	readFile(file, &head, option);
 	sortList(&head);
 	fclose(file);
 
