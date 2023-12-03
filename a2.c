@@ -21,12 +21,6 @@ typedef struct Student {
 	struct Student *next;
 } Student_t;
 
-typedef struct Table {
-	Student_t *domestic;
-	Student_t *international;
-	Student_t *all;
-} Table;
-
 // Months array
 const char *months[] = {
 	"Jan", "Feb", "Mar", "Apr", "May", "Jun", 
@@ -652,11 +646,6 @@ int main(int argc, char *argv[]) {
 		printf("Usage %s <input_file> <output_file> <option>\n", argv[0]);
 		callError("Error: Invalid option.");
 	}
-	Table *table = (Table *) malloc(sizeof(Table));
-	if (table == NULL) callError("Error: Memory could not be allocated.");
-	table->domestic = NULL;
-	table->international = NULL;
-	table->all = NULL;
 
 	Student_t *head = createNode();
 	readFile(file, &head, option);
