@@ -464,7 +464,7 @@ void processWord(char *word, Student_t *current, int word_count) {
 /**
  * Function to read text from input file. 
  */ 
-void readFile(FILE *input, Student_t **head, const int option) {
+void readFile(FILE *input, Student_t **head, const int option, char *encoding) {
 	if (input == NULL) callError("Error: Could not read file."); // Error handle reading file
 
 	Student_t *current = createNode();
@@ -529,6 +529,7 @@ void readFile(FILE *input, Student_t **head, const int option) {
 				in_word = false;
 			}
 			if (c == '\r' ) {
+				*encoding = 'W';
 				char next_char = fgetc(input); // Peek next character
 				if (next_char != '\n') callError("Error: Carriage return is invalid format.");
 			}
@@ -579,7 +580,7 @@ void readFile(FILE *input, Student_t **head, const int option) {
  * Function to write text to output file.
  * Writes by all fields.
  */
-void writeFile(FILE *output, Student_t *head) {
+void writeFile(FILE *output, Student_t *head, const char *encoding) {
 	Student_t *current = head;
 	while (current != NULL) {
 		if (current->first_name != NULL) fprintf(output, "%s ", current->first_name);
@@ -591,7 +592,8 @@ void writeFile(FILE *output, Student_t *head) {
 		if (current->status != NULL && *current->status == 'D') fprintf(output, "%s", current->status);
 		else if (current->status != NULL && *current->status == 'I') fprintf(output, "%s ", current->status);
 		if (current->toefl != NULL) fprintf(output, "%s", current->toefl);
-		if (current->next != NULL) fprintf(output, "\n");
+		if (current->next != NULL && *encoding == 'U') fprintf(output, "\n");
+		else if (current->next != NULL && *encoding == 'W') fprintf(output, "\r\n");
 		current = current->next;
 	}
 	// Output file must end with a new line
@@ -646,9 +648,9 @@ int main(int argc, char *argv[]) {
 		printf("Usage %s <input_file> <output_file> <option>\n", argv[0]);
 		callError("Error: Invalid option.");
 	}
-
+	char encoding = 'U'; // Default encoding is UNIX
 	Student_t *head = createNode();
-	readFile(file, &head, option);
+	readFile(file, &head, option, &encoding);
 	sortList(&head);
 	fclose(file);
 
@@ -656,7 +658,7 @@ int main(int argc, char *argv[]) {
 	if (file == NULL) {
 		callError("Error: Output file could not open.");
 	}
-	writeFile(file, head);
+	writeFile(file, head, &encoding);
 
 	return 0;
 }
