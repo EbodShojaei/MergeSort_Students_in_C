@@ -21,6 +21,22 @@ typedef struct Student {
 	struct Student *next;
 } Student_t;
 
+// Create a wrapper struct to preserve order in StudentList_t
+typedef struct ListNode {
+	Student_t *student;
+	struct ListNode *next;
+} ListNode_t;
+
+// Create a struct that orders the each of the lists by status
+typedef struct StudentList {
+	ListNode_t *head_d; // Head of domestic list
+	ListNode_t *tail_d;
+	ListNode_t *head_i; // Head of international list
+	ListNode_t *tail_i;
+	ListNode_t *head_a; // Head of all list
+	ListNode_t *tail_a;
+} StudentList_t;
+
 // Months array
 const char *months[] = {
 	"Jan", "Feb", "Mar", "Apr", "May", "Jun", 
@@ -65,38 +81,59 @@ Student_t *createNode() {
 }
 
 /**
- * Function to append a node to the end of the linked list.
+ * Function to wrap a Student_t node in a ListNode_t node.
  * If the head is NULL, then the head is the node.
  */
-void appendList(Student_t **head, Student_t *new_node) {
-	if (head == NULL || new_node == NULL) callError("Error: NULL argument.");
-	if (*head == NULL) {
-		*head = new_node;
-		return;
+void appendToList(ListNode_t **head, ListNode_t **tail, Student_t *student) {
+	ListNode_t *node = (ListNode_t *) malloc(sizeof(ListNode_t));
+	if (node == NULL) callError("Error: Memory could not be allocated.");
+	node->student = student;
+	node->next = NULL;
+
+	if (*head == NULL) *head = node;
+	else (*tail)->next = node;
+	*tail = node;
+}
+
+/**
+ * Function to append a node to the end of the linked list.
+ */
+void appendList(StudentList_t *list, Student_t *new_node) {
+	if (list == NULL || new_node == NULL) callError("Error: NULL argument.");
+
+	// Append to all list
+	appendToList(&list->head_a, &list->tail_a, new_node);
+
+	// Append to domestic or international list
+	if (new_node->status != NULL) {
+		switch (new_node->status[0]) {
+			case 'D': appendToList(&list->head_d, &list->tail_d, new_node); break;
+			case 'I': appendToList(&list->head_i, &list->tail_i, new_node); break;
+			default: callError("Error: Invalid status.");
+		}
 	}
-	Student_t *current = *head;
-	while (current->next != NULL) current = current->next;
-	current->next = new_node;
 }
 
 /**
  * Function to free the linked list.
  * Frees by all fields.
  */
-void freeList(Student_t *node) {
+void freeList(ListNode_t *node) {
 	while (node != NULL) {
-		Student_t *temp = node;
+		ListNode_t *temp = node;
 		node = node->next;
 
 		// Free dynamically allocated strings within the node
-		if (temp->first_name != NULL) free(temp->first_name);
-		if (temp->last_name != NULL) free(temp->last_name);
-		if (temp->birth_month != NULL) free(temp->birth_month);
-		if (temp->birth_day != NULL) free(temp->birth_day);
-		if (temp->birth_year != NULL) free(temp->birth_year);
-		if (temp->gpa != NULL) free(temp->gpa);
-		if (temp->status != NULL) free(temp->status);
-		if (temp->toefl != NULL) free(temp->toefl);
+		if (temp->student->first_name != NULL) free(temp->student->first_name);
+		if (temp->student->last_name != NULL) free(temp->student->last_name);
+		if (temp->student->birth_month != NULL) free(temp->student->birth_month);
+		if (temp->student->birth_day != NULL) free(temp->student->birth_day);
+		if (temp->student->birth_year != NULL) free(temp->student->birth_year);
+		if (temp->student->gpa != NULL) free(temp->student->gpa);
+		if (temp->student->status != NULL) free(temp->student->status);
+		if (temp->student->toefl != NULL) free(temp->student->toefl);
+		
+		free(temp->student);
 		free(temp);
 	}
 }
@@ -247,15 +284,15 @@ int compareStudents(Student_t *a, Student_t *b) {
  * Function to split a linked list into two halves.
  * Splits by all fields.
  */
-void splitList(Student_t *head, Student_t **left, Student_t **right) {
+void splitList(ListNode_t *head, ListNode_t **left, ListNode_t **right) {
 	if (head == NULL || head->next == NULL) {
 		*left = head;
 		*right = NULL;
 		return;
 	}
 
-	Student_t *slow = head;
-	Student_t *fast = head->next;
+	ListNode_t *slow = head;
+	ListNode_t *fast = head->next;
 
 	while (fast != NULL) {
 		fast = fast->next;
@@ -274,13 +311,13 @@ void splitList(Student_t *head, Student_t **left, Student_t **right) {
  * Function to merge two linked lists.
  * Merges by all fields.
  */
-Student_t *mergeList(Student_t *left, Student_t *right) {
-	Student_t *result = NULL;
+ListNode_t *mergeList(ListNode_t *left, ListNode_t *right) {
+	ListNode_t *result = NULL;
 
 	if (left == NULL) return right;
 	if (right == NULL) return left;
 
-	int compare = compareStudents(left, right);
+	int compare = compareStudents(left->student, right->student);
 	if (compare <= 0) {
 		result = left;
 		result->next = mergeList(left->next, right);
@@ -296,11 +333,11 @@ Student_t *mergeList(Student_t *left, Student_t *right) {
  * Function to sort a linked list using merge sort.
  * Sorts by all fields.
  */
-void sortList(Student_t **head) {
+void sortList(ListNode_t **head) {
 	if (*head == NULL || (*head)->next == NULL) return;
 
-	Student_t *left = NULL;
-	Student_t *right = NULL;
+	ListNode_t *left = NULL;
+	ListNode_t *right = NULL;
 
 	splitList(*head, &left, &right);
 
@@ -464,7 +501,7 @@ void processWord(char *word, Student_t *current, int word_count) {
 /**
  * Function to read text from input file. 
  */ 
-void readFile(FILE *input, Student_t **head, const int option, char *encoding) {
+void readFile(FILE *input, StudentList_t *list, const int option, char *encoding) {
 	if (input == NULL) callError("Error: Could not read file."); // Error handle reading file
 
 	Student_t *current = createNode();
@@ -550,20 +587,7 @@ void readFile(FILE *input, Student_t **head, const int option, char *encoding) {
 			if (space_count > 1) callError("Error: Trailing spaces is invalid format.");
 
 			// Append Student to linked list
-			switch (option) {
-				case 1: // Domestic
-					if (current->status[0] == 'D') appendList(head, current);
-					else freeList(current);
-					break;
-				case 2: // International
-					if (current->status[0] == 'I') appendList(head, current);
-					else freeList(current);
-					break;
-				case 3: // All
-					appendList(head, current);
-					break;
-
-			}
+			appendList(list, current);
 			current = createNode();
 
 			// Reset counts for next line
@@ -580,20 +604,21 @@ void readFile(FILE *input, Student_t **head, const int option, char *encoding) {
  * Function to write text to output file.
  * Writes by all fields.
  */
-void writeFile(FILE *output, Student_t *head, const char *encoding) {
-	Student_t *current = head;
+void writeFile(FILE *output, ListNode_t *head, const char *encoding) {
+	ListNode_t *current = head;
 	while (current != NULL) {
-		if (current->first_name != NULL) fprintf(output, "%s ", current->first_name);
-		if (current->last_name != NULL) fprintf(output, "%s ", current->last_name);
-		if (current->birth_month != NULL) fprintf(output, "%s-", current->birth_month);
-		if (current->birth_day != NULL) fprintf(output, "%s-", current->birth_day);
-		if (current->birth_year != NULL) fprintf(output, "%s ", current->birth_year);
-		if (current->gpa != NULL) fprintf(output, "%s ", current->gpa);
-		if (current->status != NULL && *current->status == 'D') fprintf(output, "%s", current->status);
-		else if (current->status != NULL && *current->status == 'I') fprintf(output, "%s ", current->status);
-		if (current->toefl != NULL) fprintf(output, "%s", current->toefl);
-		if (current->next != NULL && *encoding == 'U') fprintf(output, "\n");
-		else if (current->next != NULL && *encoding == 'W') fprintf(output, "\r\n");
+		Student_t *student = current->student;
+		if (student->first_name != NULL) fprintf(output, "%s ", student->first_name);
+		if (student->last_name != NULL) fprintf(output, "%s ", student->last_name);
+		if (student->birth_month != NULL) fprintf(output, "%s-", student->birth_month);
+		if (student->birth_day != NULL) fprintf(output, "%s-", student->birth_day);
+		if (student->birth_year != NULL) fprintf(output, "%s ", student->birth_year);
+		if (student->gpa != NULL) fprintf(output, "%s ", student->gpa);
+		if (student->status != NULL && *student->status == 'D') fprintf(output, "%s", student->status);
+		else if (student->status != NULL && *student->status == 'I') fprintf(output, "%s ", student->status);
+		if (student->toefl != NULL) fprintf(output, "%s", student->toefl);
+		if (*encoding == 'U') fprintf(output, "\n");
+		else if (*encoding == 'W') fprintf(output, "\r\n");
 		current = current->next;
 	}
 	// Output file must end with a new line
@@ -627,38 +652,55 @@ int main(int argc, char *argv[]) {
 		printf("Error: Failed to create output file.\n");
 		return 1;
 	}
-
 	fclose(outputFile);
 
+	// Check if number of arguments is valid. Then get inputs.
 	if (argc != 4) {
 		printf("Usage %s <input_file> <output_file> <option>\n", argv[0]);
 		callError("Error: Invalid number of arguments.");
 	}
-
 	const char *input_name = argv[1]; // Input file name
 	const char *output_name = argv[2]; // Output file name
 	error_output = output_name; // Set global error output
 	
+	// Open input file
 	FILE *file = fopen(input_name, "r");
 	if (file == NULL) callError("Error: Input file not found.");
 	fseek(file, 0, SEEK_SET); // Ensure cursor at start of file
 
+	// Check if option is valid
 	const int option = atoi(argv[3]);
 	if (option < 1 || option > 3) {
 		printf("Usage %s <input_file> <output_file> <option>\n", argv[0]);
 		callError("Error: Invalid option.");
 	}
-	char encoding = 'U'; // Default encoding is UNIX
-	Student_t *head = createNode();
-	readFile(file, &head, option, &encoding);
+
+	// Setup linked list
+	ListNode_t *head = NULL;
+	StudentList_t *list = (StudentList_t *) malloc(sizeof(StudentList_t));
+	if (list == NULL) callError("Error: Memory could not be allocated.");
+
+	// Read from input file
+	char encoding = 'U'; // Default encoding is UNIX. Function changes to Windows if needed.
+	readFile(file, list, option, &encoding);
+	switch (option) {
+		case 1: head = list->head_d; break; // Domestic
+		case 2: head = list->head_i; break; // International
+		case 3: head = list->head_a; break; // All
+	}
 	sortList(&head);
 	fclose(file);
 
+	// Write to output file
 	file = fopen(output_name, "w");
 	if (file == NULL) {
 		callError("Error: Output file could not open.");
 	}
 	writeFile(file, head, &encoding);
+
+	// Clean up
+	if (list->head_a != NULL) freeList(list->head_a);
+	free(list);
 
 	return 0;
 }
